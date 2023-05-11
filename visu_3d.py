@@ -10,12 +10,11 @@ def errorbar_latency_3d(clocks, latencies, size):
     @param[in]  size    measured message size
     '''
     # todo: size 1 problematic, tuples should be handled with zip, then np
-    loc_latencies = latencies.copy()
     # calculating lower and upper error from min and max
-    measurement.upper_lower_from_minmax(loc_latencies)
-    loc_latencies = np.array(loc_latencies).squeeze()
-    mean = loc_latencies[:, 0]
-    err = loc_latencies[:, (1, 2)].T
+    latencies = measurement.upper_lower_from_minmax(latencies)
+    latencies = np.array(latencies).squeeze()
+    mean = latencies[:, 0]
+    err = latencies[:, (1, 2)].T
     m7, m4 = zip(*clocks)
     # plot the data with error bars
     fig = plt.figure()
@@ -24,7 +23,7 @@ def errorbar_latency_3d(clocks, latencies, size):
     ax.set_xlabel('M7 core clock [MHz]')
     ax.set_ylabel('M4 core clock [MHz]')
     ax.set_zlabel('Latency mean, errorbar for min and max [us]')
-    ax.set_title(f'Sending {size} bytes from M7 to M4')
+    ax.set_title(f'Sending {size[0]} bytes from M7 to M4')
     ax.set_xlim([0, 480])
     ax.set_ylim([0, 240])
     ax.set_zlim(0)
@@ -37,12 +36,11 @@ def errorbar_datarate_3d(clocks, datarates, size):
     @param[in]  size    measured message size
     '''
     #todo: same problem with 1 size, needs more work
-    loc_datarates = datarates.copy()
     # calculating lower and upper error from min and max
-    measurement.upper_lower_from_minmax(loc_datarates)
-    loc_datarates = np.array(loc_datarates).squeeze()
-    mean = loc_datarates[:, 0]
-    err = loc_datarates[:, (1, 2)].T
+    datarates = measurement.upper_lower_from_minmax(datarates)
+    datarates = np.array(datarates).squeeze()
+    mean = datarates[:, 0]
+    err = datarates[:, (1, 2)].T
     m7, m4 = zip(*clocks)
     # plot the data with error bars
     fig = plt.figure()
@@ -51,8 +49,8 @@ def errorbar_datarate_3d(clocks, datarates, size):
     ax.set_xlabel('M7 core clock [MHz]')
     ax.set_ylabel('M4 core clock [MHz]')
     # M stands for 1e6 in this case
-    ax.set_zlabel('Datarate mean, errorbar for min and max [Mbyte/s]')
-    ax.set_title(f'Sending {size} bytes from M7 to M4')
+    ax.set_zlabel('Data rate mean, min and max [Mbyte/s]')
+    ax.set_title(f'Sending {size[0]} bytes from M7 to M4')
     ax.set_xlim([0, 480])
     ax.set_ylim([0, 240])
     ax.set_zlim(0)
@@ -63,7 +61,7 @@ def main():
               (160, 10), (192, 12), (196, 98), (200, 200), (216, 27),\
               (240, 240), (248, 62), (280, 140), (304, 152),\
               (308, 77), (320, 40), (332, 166), (376, 96),\
-              (412, 206), (432, 27), (444, 111), (480, 240)]
+              (412, 206), (432, 27), (444, 111), (480, 240)] + [(240, 120), (480, 120), (480, 60)]
     size = [256] # list for read_meas_from_files
 
     latencies = [] # for storing tuple (mean, min, max)
