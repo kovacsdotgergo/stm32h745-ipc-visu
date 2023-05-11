@@ -1,4 +1,10 @@
-import visu_3d
+import measurement
+import numpy as np
+import matplotlib.pyplot as plt
 
-ret = visu_3d.get_latencies(8, 'meas_8_8', [256])
-print(ret)
+# arr = np.array(measurement.get_latencies(72, 'meas_72_72', [1, 16, 32, 48]))
+
+b = [1 if x==0 else 16*x for x in range(17)]
+a = [1 if x==0 else 2048*x for x in range(17)]
+print(a)
+print(b)

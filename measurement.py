@@ -76,7 +76,8 @@ def read_meas_from_files(sizes, dir_prefix, filename_prefix='meas') -> list:
     return all_meas_values
 
 def get_latencies(timer_clock, dir_prefix, size):
-    '''Reads in measurement values and calculates latencies
+    '''Reads in measurement values (mean, min, max) and calculates
+        latencies
     @param[in]  timer_clock timer clock frequency in [MHz]
     @param[in]  dir_prefix  name of the directory
     @param[in]  size    measured message size
@@ -88,7 +89,7 @@ def get_latencies(timer_clock, dir_prefix, size):
     return latency_mean, latency_min, latency_max
 
 def get_datarates(timer_clock, dir_prefix, size):
-    '''Reads measurement values and calculates datarates
+    '''Reads measurement values (mean, min, max) and calculates datarates
     @param[in]  timer_clock timer clock frequency in [MHz]
     @param[in]  dir_prefix  name of the directory
     @param[in]  size    measured message size
@@ -99,25 +100,69 @@ def get_datarates(timer_clock, dir_prefix, size):
     data_rate_mean = size / np.mean(all_meas_values, axis=1) * timer_clock # Mbyte/s
     return data_rate_mean, data_rate_min, data_rate_max
 
+def get_all_latencies(clocks, sizes, meas_num=1024,\
+                      dir_prefix_without_clk='meas_'):
+    '''Reads all measurement values for each clk and size
+    @param[in]  clocks  list of tuple of clks (m7, m4)
+    @param[in]  sizes   list of sizes
+    @param[in]  meas_num    number of measurements in each file
+    @param[in]  dir_prefix_without_clk  dir prefix without the clks 
+            e.g. meas_ in case of meas_72_72
+    @returns    np.array() with size (len(clocks), len(sizes), num_meas)'''
+    all_latencies = np.empty((0, len(sizes), meas_num))
+    for m7, m4 in clocks:
+        new_meas_values = np.array( \
+            read_meas_from_files(sizes, f'{dir_prefix_without_clk}{m7}_{m4}'))
+        new_meas_values = np.expand_dims(new_meas_values, axis=0)
+        all_latencies = np.concatenate(
+            (all_latencies, new_meas_values / m4), axis=0) #us
+    return all_latencies
+
+class MeasType:
+    latency = 0
+    datarate = 1
+
+def get_each_for_clk(clocks, sizes, meas_type):
+    '''
+    TODO rest
+    @param[in]  meas_type   Meas_type.latency or datarate the calculated 
+        value to return'''
+    all_values = np.empty((0, 3, len(sizes)))
+    for m7, m4 in clocks:
+        dir_prefix = f'meas_{m7}_{m4}'
+        if meas_type == MeasType.latency:
+            new_values = get_latencies(m4, dir_prefix, sizes)
+        elif meas_type == MeasType.datarate:
+            new_values = get_datarates(m4, dir_prefix, sizes)
+        new_values = upper_lower_from_minmax(list(zip(*new_values)))
+        new_values = np.expand_dims(np.array(new_values).T, axis=0)
+        all_values = np.concatenate((all_values, new_values), axis=0)
+    return all_values
+
 def upper_lower_from_minmax(list_of_tuples):
     '''calculating lower and upper error from min and max
-    @param[inout]  list    input list of (mean, min, max) tuples
-            output list of (mean, lower_err, upper_err) tuples
+    @param[in]  list    input list of (mean, min, max) tuples
+            
+    @returns    output list of (mean, lower_err, upper_err) tuples
     '''
-    for i, (mean, min_v, max_v) in enumerate(list_of_tuples):
-        list_of_tuples[i] = (mean, mean-min_v, max_v-mean)
+    ret = []
+    for (mean, min_v, max_v) in list_of_tuples:
+        ret.append((mean, mean-min_v, max_v-mean))
+    return ret
 
 def main():
     '''Measuring for several different sizes, saving the result to file'''
     serial_config = SerialConfig('COM5', 115200, 8, 'N', 1)
     NUM_MEAS = 1024
-    sizes = [16*x for x in range(17)] # [2048*x for x in range(17)]
-    sizes.append(512)
-    sizes.append(4096)
-    sizes.append(16384)
-    sizes[0] = 1
-    m7 = 444
-    m4 = 111
+    # sizes = [16*x for x in range(17)] # [2048*x for x in range(17)]
+    # sizes.append(512)
+    # sizes.append(4096)
+    # sizes.append(16384)
+    # sizes[0] = 1
+    # sizes = [1 if x==0 else 16*x for x in range(17)]
+    sizes = [1 if x==0 else 2048*x for x in range(16)] + [32760]
+    m7 = 120
+    m4 = 120
     timer_clock = m4
     DIR_PREFIX = f'meas_{m7}_{m4}'
     for sent_data_size in sizes:
