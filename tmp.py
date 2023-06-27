@@ -1,10 +1,20 @@
 import measurement
+import visu
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
-# arr = np.array(measurement.get_latencies(72, 'meas_72_72', [1, 16, 32, 48]))
+dirs = os.listdir()
+print(dirs)
+for dir in [x for x in dirs if os.path.isdir(x)]:
+    parts = dir.split(sep='_')
+    if parts[0] == 'meas':
+        print(f'({parts[1]}, {parts[2]})')
 
-b = [1 if x==0 else 16*x for x in range(17)]
-a = [1 if x==0 else 2048*x for x in range(17)]
-print(a)
-print(b)
+sizes = [1 if x==0 else 2048*x for x in range(16)] + [32760]
+ret = measurement.get_latencies(120, 'tmp_meas', sizes)
+print(type(ret))
+measurement.upper_lower_from_minmax()
+visu.errorbar_latency(sizes, ret[0], ret[1:2])
+plt.show()
+print('h')

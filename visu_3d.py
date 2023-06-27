@@ -1,9 +1,8 @@
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import measurement
 
-def errorbar_latency_3d(clocks, latencies, size):
+def errorbar_latency_3d(clocks, latencies, size, title=True):
     '''3d errorbar plot for latencies
     @param[in]  clocks  list of clock tuples (m7, m4) [MHz]
     @param[in]  latencies   list of latency tuples (mean, min, max)
@@ -21,15 +20,18 @@ def errorbar_latency_3d(clocks, latencies, size):
     ax = fig.add_subplot(111, projection='3d')
     ax.errorbar(m7, m4, mean, zerr=err, fmt='og')
     ax.set_xlabel('M7 core clock [MHz]')
+    # ax.set_xticklabels([0, None, None, None, 400])
     ax.set_ylabel('M4 core clock [MHz]')
+    # ax.set_yticklabels([0, None, None, None, 200])
     ax.set_zlabel('Latency mean, errorbar for min and max [us]')
-    ax.set_title(f'Sending {size[0]} bytes from M7 to M4')
+    if title:
+        ax.set_title(f'Sending {size[0]} bytes from M7 to M4')
     ax.set_xlim([0, 480])
     ax.set_ylim([0, 240])
     ax.set_zlim(0)
 
 
-def errorbar_datarate_3d(clocks, datarates, size):
+def errorbar_datarate_3d(clocks, datarates, size, title=True):
     '''3d errorbar plot for datarates
     @param[in]  clocks  list of clock tuples (m4, m7) [MHz]
     @param[in]  datarates   list of datarate tuples (mean, min, max)
@@ -47,10 +49,13 @@ def errorbar_datarate_3d(clocks, datarates, size):
     ax = fig.add_subplot(111, projection='3d')
     ax.errorbar(m7, m4, mean, zerr=err, fmt='og')
     ax.set_xlabel('M7 core clock [MHz]')
-    ax.set_ylabel('M4 core clock [MHz]')
-    # M stands for 1e6 in this case
+    # ax.set_xticklabels([0, None, None, None, 400])
+    # ax.set_ylabel('M4 core clock [MHz]')
+    ax.set_yticklabels([0, None, None, None, 200])
+    # M stands for 1e6 in this case (Mega, not Mibi)
     ax.set_zlabel('Data rate mean, min and max [Mbyte/s]')
-    ax.set_title(f'Sending {size[0]} bytes from M7 to M4')
+    if title:
+        ax.set_title(f'Sending {size[0]} bytes from M7 to M4')
     ax.set_xlim([0, 480])
     ax.set_ylim([0, 240])
     ax.set_zlim(0)
@@ -72,8 +77,8 @@ def main():
         latencies.append(measurement.get_latencies(m4, dir_prefix, size)) # us
         datarates.append(measurement.get_datarates(m4, dir_prefix, size)) # Mbyte/s
 
-    errorbar_latency_3d(clocks, latencies, size)
-    errorbar_datarate_3d(clocks, datarates, size)
+    errorbar_latency_3d(clocks, latencies, size, title=False)
+    errorbar_datarate_3d(clocks, datarates, size, title=False)
 
     # show graph
     plt.show()

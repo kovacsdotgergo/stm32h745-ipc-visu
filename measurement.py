@@ -47,7 +47,8 @@ def write_meas_to_file(dir_prefix, sent_data_size, num_meas, response, timer_clo
         file.writelines(response)
     print(f'written to {filename}')
 
-def read_meas_from_files(sizes, dir_prefix, filename_prefix='meas') -> list:
+def read_meas_from_files(sizes, dir_prefix,
+                         filename_prefix='meas') -> list[list]:
     '''Read all files for the elements given in sizes
     Returns: a list of lists that contain all the measurement values'''
     filenames = [os.path.join(dir_prefix, f'{filename_prefix}{x}.log') for x in sizes]
@@ -75,29 +76,29 @@ def read_meas_from_files(sizes, dir_prefix, filename_prefix='meas') -> list:
         all_meas_values.append(cur_meas_values)
     return all_meas_values
 
-def get_latencies(timer_clock, dir_prefix, size):
+def get_latencies(timer_clock, dir_prefix, sizes):
     '''Reads in measurement values (mean, min, max) and calculates
         latencies
     @param[in]  timer_clock timer clock frequency in [MHz]
     @param[in]  dir_prefix  name of the directory
-    @param[in]  size    measured message size
+    @param[in]  sizes    measured message sizes
     @returns mean, min, max [us]'''
-    all_meas_values = np.array(read_meas_from_files(size, dir_prefix))
+    all_meas_values = np.array(read_meas_from_files(sizes, dir_prefix))
     latency_mean = np.mean(all_meas_values, axis=1) / timer_clock # us
     latency_min = np.min(all_meas_values, axis=1) / timer_clock # us
     latency_max = np.max(all_meas_values, axis=1) / timer_clock # us
     return latency_mean, latency_min, latency_max
 
-def get_datarates(timer_clock, dir_prefix, size):
+def get_datarates(timer_clock, dir_prefix, sizes):
     '''Reads measurement values (mean, min, max) and calculates datarates
     @param[in]  timer_clock timer clock frequency in [MHz]
     @param[in]  dir_prefix  name of the directory
-    @param[in]  size    measured message size
+    @param[in]  sizes    measured message sizes
     @returns mean, min, max [Mbyte/s]'''
-    all_meas_values = np.array(read_meas_from_files(size, dir_prefix))
-    data_rate_min = size / np.max(all_meas_values, axis=1) * timer_clock # Mbyte/s
-    data_rate_max = size / np.min(all_meas_values, axis=1) * timer_clock # Mbyte/s
-    data_rate_mean = size / np.mean(all_meas_values, axis=1) * timer_clock # Mbyte/s
+    all_meas_values = np.array(read_meas_from_files(sizes, dir_prefix))
+    data_rate_min = sizes / np.max(all_meas_values, axis=1) * timer_clock # Mbyte/s
+    data_rate_max = sizes / np.min(all_meas_values, axis=1) * timer_clock # Mbyte/s
+    data_rate_mean = sizes / np.mean(all_meas_values, axis=1) * timer_clock # Mbyte/s
     return data_rate_mean, data_rate_min, data_rate_max
 
 def get_all_latencies(clocks, sizes, meas_num=1024,\
@@ -124,9 +125,12 @@ class MeasType:
 
 def get_each_for_clk(clocks, sizes, meas_type):
     '''
-    TODO rest
+    @param[in]  clocks      array of clock pair tuples (m7, m4)
+    @param[in]  sizes       list of sizes
     @param[in]  meas_type   Meas_type.latency or datarate the calculated 
-        value to return'''
+        value to return
+        
+    @returns    np.array with size [len(clocks), 3, len(sizes)]'''
     all_values = np.empty((0, 3, len(sizes)))
     for m7, m4 in clocks:
         dir_prefix = f'meas_{m7}_{m4}'
@@ -164,7 +168,7 @@ def main():
     m7 = 120
     m4 = 120
     timer_clock = m4
-    DIR_PREFIX = f'meas_{m7}_{m4}'
+    DIR_PREFIX = 'tmp_meas' #f'meas_{m7}_{m4}'
     for sent_data_size in sizes:
         print(f'measuring {sent_data_size} long data...')
         response = measure(NUM_MEAS, sent_data_size, serial_config)

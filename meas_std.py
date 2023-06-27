@@ -9,15 +9,18 @@ def main():
         - plot of change in mean and std with changing meas length
         - histogram with a bin for a each unique value, long measurement
     """
-    filenames = ['putty1_65536.log', 'putty16_65536.log',
-                 'putty128_65536.log', 'putty256_65536.log']
+    dir_prefix = 'putty_72_72_initial/'
+    filenames = ['putty1_65536.log', \
+                 'putty16_65536.log', \
+                 'putty128_65536.log', \
+                 'putty256_65536.log']
     all_meas_values = []
     for long_meas_filename in filenames:
         # cutting the expected datasize from the filename
         buffer_len = int(long_meas_filename.split('_', maxsplit=1)[0][5:])
 
         cur_meas_values = []
-        with open(long_meas_filename, 'r', encoding='ascii') as file:
+        with open(dir_prefix + long_meas_filename, 'r', encoding='ascii') as file:
             file.readline() # header
             file.readline() # s
             meas_length = int(file.readline()) # length of the measurement
@@ -46,6 +49,8 @@ def main():
             plt.subplot(rows, cols, i+1)
             plt.title(f'Num of bins: {bin_size}')
             plt.hist(meas_values, density=False, bins=bin_size, alpha=0.5, color='green')
+            plt.xlabel('latency in clk')
+            plt.ylabel('frequency')
             plt.grid()
     # Based on this plot for the 1 long measurement 32 bins are enough
 
@@ -60,7 +65,9 @@ def main():
         for i, meas_len in enumerate(plot_meas_lengths):
             plt.subplot(rows, cols, i+1)
             plt.title(f'Num of meas: {meas_len}')
-            plt.hist(meas_values[0:meas_len], density=False, bins=32, alpha=0.5, color='green')
+            plt.hist(meas_values[0:meas_len], density=False, bins=128, alpha=0.5, color='green')
+            plt.xlabel('latency in clk')
+            plt.ylabel('frequency')
             plt.grid()
     # 1024 samples seem ok
 

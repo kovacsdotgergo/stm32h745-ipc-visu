@@ -65,7 +65,7 @@ def errorbar_data_rate(sizes, means, errors):
     plt.ylabel('Average, min and max data rate [byte/s]')
     plt.xlabel('Sent data size [byte]')
 
-def histogram_latency_unique(clocks, sizes, all_latencies):
+def histogram_latency(clocks, sizes, all_latencies):
     '''Histograms to display distribution of latencies
     @param[in]  clocks  list of tuples (m7, m4) clocks in [MHz]
     @param[in]  sizes   list of all measurement data sizes in bytes
@@ -109,7 +109,8 @@ def main():
 
     sizes_multidim = [[1 if x==0 else 16*x for x in range(17)],
                      [1 if x==0 else 2048*x for x in range(16)]+[32760]]
-    clocks_multidim = [(480, 120), (240, 120), (120, 120)]
+    sizes_multidim[1].insert(1, 256)
+    clocks_multidim = [(480, 240), (480, 120), (480, 60)]
     # plot with changing only one frequency
     plt.figure()
     for i, _sizes in enumerate(sizes_multidim):
@@ -123,10 +124,10 @@ def main():
         errorbars_data_rate(clocks_multidim, _sizes, datarates)
 
     # histogram data and plot
-    hist_sizes = [1, 16, 128, 16384]
-    hist_clocks = [(480, 240), (480, 120), (480, 60)]
+    hist_sizes = [16, 256, 4096, 16384]
+    hist_clocks = [(240, 240)] #[(480, 240), (480, 120), (480, 60)]
     all_latencies = measurement.get_all_latencies(hist_clocks, hist_sizes, meas_num)
-    histogram_latency_unique(hist_clocks, hist_sizes, all_latencies)
+    histogram_latency(hist_clocks, hist_sizes, all_latencies)
 
     # show graph
     plt.show()
