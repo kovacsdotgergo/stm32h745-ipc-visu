@@ -1,4 +1,5 @@
 meas_[0-9]*_[0-9]*
+tmp_meas
 putty.log
 putty_72_72_initial
 .vscode

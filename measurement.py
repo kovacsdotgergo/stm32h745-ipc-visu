@@ -127,7 +127,7 @@ def get_each_for_clk(clocks, sizes, meas_type):
     '''
     @param[in]  clocks      array of clock pair tuples (m7, m4)
     @param[in]  sizes       list of sizes
-    @param[in]  meas_type   Meas_type.latency or datarate the calculated 
+    @param[in]  meas_type   Meas_type.latency or datarate, the calculated 
         value to return
         
     @returns    np.array with size [len(clocks), 3, len(sizes)]'''
@@ -164,7 +164,7 @@ def main():
     # sizes.append(16384)
     # sizes[0] = 1
     # sizes = [1 if x==0 else 16*x for x in range(17)]
-    sizes = [1 if x==0 else 2048*x for x in range(16)] + [32760]
+    sizes = [1 if x==0 else 2048*x for x in range(16)] + [32760, 512, 1024, 1536]
     m7 = 120
     m4 = 120
     timer_clock = m4
