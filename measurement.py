@@ -12,14 +12,25 @@ class SerialConfig:
         self.parity = parity
         self.stopbits = stopbits
 
-def measure(num_meas, sent_data_size, serial_config) -> list:
+class MeasDirection:
+    """Enum class for direction of communication between the cores
+    """
+    m7_to_m4 = 0
+    m4_to_m7 = 1
+    both = 2
+
+def measure(num_meas, sent_data_size, serial_config, meas_direction) -> list:
     '''Function for measuring sent_data_size bytes, sending num_meas times
     '''
     response = []
     # Set up the serial connection
     with serial.Serial(serial_config.port, serial_config.baud) as ser:
         # start char
-        ser.write(b's')
+        if MeasDirection.m7_to_m4 == meas_direction:
+            ser.write(b's')
+        elif MeasDirection.m4_to_m7 == meas_direction:
+            ser.write(b'r')
+        else: raise ValueError("Not existing direction of measurement")
         response.append(ser.readline())
         # number of measurement repetition
         string_to_send = f'{num_meas}\r'.encode('ascii')
@@ -120,6 +131,7 @@ def get_all_latencies(clocks, sizes, meas_num=1024,\
     return all_latencies
 
 class MeasType:
+    """Enum class describing the type of measurement"""
     latency = 0
     datarate = 1
 
@@ -138,6 +150,7 @@ def get_each_for_clk(clocks, sizes, meas_type):
             new_values = get_latencies(m4, dir_prefix, sizes)
         elif meas_type == MeasType.datarate:
             new_values = get_datarates(m4, dir_prefix, sizes)
+        else: raise ValueError("Wrong type of measurement")
         new_values = upper_lower_from_minmax(list(zip(*new_values)))
         new_values = np.expand_dims(np.array(new_values).T, axis=0)
         all_values = np.concatenate((all_values, new_values), axis=0)
@@ -157,22 +170,29 @@ def upper_lower_from_minmax(list_of_tuples):
 def main():
     '''Measuring for several different sizes, saving the result to file'''
     serial_config = SerialConfig('COM5', 115200, 8, 'N', 1)
-    NUM_MEAS = 1024
-    # sizes = [16*x for x in range(17)] # [2048*x for x in range(17)]
-    # sizes.append(512)
-    # sizes.append(4096)
-    # sizes.append(16384)
-    # sizes[0] = 1
-    # sizes = [1 if x==0 else 16*x for x in range(17)]
-    sizes = [1 if x==0 else 2048*x for x in range(16)] + [32760, 512, 1024, 1536]
-    m7 = 120
-    m4 = 120
-    timer_clock = m4
-    DIR_PREFIX = 'tmp_meas' #f'meas_{m7}_{m4}'
+    num_meas = 1024
+
+    sizes_short = [1 if x==0 else 16*x for x in range(17)]
+    sizes_long = [1 if x==0 else 2048*x for x in range(16)] + [512, 1024, 1536, 16380]
+    sizes_max = [16380]
+    #config begin
+    sizes = sizes_max
+    meas_direction = MeasDirection.m4_to_m7
+    m7_clk = 120
+    m4_clk = 120
+    #config end
+    if MeasDirection.m4_to_m7 == meas_direction:
+        direction_letter = 'r'
+    elif MeasDirection.m7_to_m4 == meas_direction:
+        direction_letter = 's'
+    else:
+        direction_letter = 'a'
+    timer_clock = m4_clk
+    dir_prefix = f'meas_{direction_letter}_{m7_clk}_{m4_clk}' #'tmp_meas'
     for sent_data_size in sizes:
         print(f'measuring {sent_data_size} long data...')
-        response = measure(NUM_MEAS, sent_data_size, serial_config)
-        write_meas_to_file(DIR_PREFIX, sent_data_size, NUM_MEAS, response,
+        response = measure(num_meas, sent_data_size, serial_config, meas_direction)
+        write_meas_to_file(dir_prefix, sent_data_size, num_meas, response,
                            timer_clock)
 
 if __name__ == '__main__':
