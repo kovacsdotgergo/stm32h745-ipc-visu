@@ -19,6 +19,17 @@ class MeasDirection:
     m4_to_m7 = 1
     both = 2
 
+def direction_to_letter(direction: MeasDirection) -> str:
+    """Returns the corresponding letter used in uart to the input
+    Note: only works for uart compatible letters, 'r' or 's', execpton 
+        otherwise"""
+    if MeasDirection.m4_to_m7 == direction:
+        return 'r'
+    elif MeasDirection.m7_to_m4 == direction:
+        return 's'
+    else:
+        raise ValueError("Not existing direction of measurement")
+
 def measure(num_meas, sent_data_size, serial_config, meas_direction) -> list:
     '''Function for measuring sent_data_size bytes, sending num_meas times
     '''
@@ -26,11 +37,8 @@ def measure(num_meas, sent_data_size, serial_config, meas_direction) -> list:
     # Set up the serial connection
     with serial.Serial(serial_config.port, serial_config.baud) as ser:
         # start char
-        if MeasDirection.m7_to_m4 == meas_direction:
-            ser.write(b's')
-        elif MeasDirection.m4_to_m7 == meas_direction:
-            ser.write(b'r')
-        else: raise ValueError("Not existing direction of measurement")
+        direction_letter = direction_to_letter(meas_direction) #'r' or 's'
+        ser.write(direction_letter.encode('ascii'))
         response.append(ser.readline())
         # number of measurement repetition
         string_to_send = f'{num_meas}\r'.encode('ascii')
@@ -44,7 +52,8 @@ def measure(num_meas, sent_data_size, serial_config, meas_direction) -> list:
             response.append(ser.readline())
     return response
 
-def write_meas_to_file(dir_prefix, sent_data_size, num_meas, response, timer_clock):
+def write_meas_to_file(dir_prefix, response, sent_data_size, num_meas,\
+                       timer_clock, direction):
     '''Function for writing the measurement results similarly to putty
     @param[in]  timer_clock   timer clock frequency in MHz'''
     filename = f'meas{sent_data_size}.log'
@@ -52,8 +61,9 @@ def write_meas_to_file(dir_prefix, sent_data_size, num_meas, response, timer_clo
     MODE = 'wb' if os.path.exists(fullpath) else 'xb'
     with open(fullpath, MODE) as file:
         # header
+        direction_info = 'M7 to M4' if MeasDirection.m7_to_m4 == direction else 'M4 to M7'
         file.write(f'Measurement repeated {num_meas} times, measured sending ' \
-                f'of {sent_data_size} bytes from M7 to M4, timer clock:' \
+                f'of {sent_data_size} bytes from {direction_info}, timer clock:' \
                 f'{timer_clock} MHz\n'.encode('ascii'))
         file.writelines(response)
     print(f'written to {filename}')
@@ -173,27 +183,29 @@ def main():
     num_meas = 1024
 
     sizes_short = [1 if x==0 else 16*x for x in range(17)]
-    sizes_long = [1 if x==0 else 2048*x for x in range(16)] + [512, 1024, 1536, 16380]
+    sizes_long = [1 if x==0 else 1024*x for x in range(16)] + [512, 1536, 16380]
     sizes_max = [16380]
     #config begin
-    sizes = sizes_max
-    meas_direction = MeasDirection.m4_to_m7
+    sizes = sizes_long[1:] + sizes_short
+    meas_direction = MeasDirection.both
     m7_clk = 120
     m4_clk = 120
     #config end
-    if MeasDirection.m4_to_m7 == meas_direction:
-        direction_letter = 'r'
-    elif MeasDirection.m7_to_m4 == meas_direction:
-        direction_letter = 's'
-    else:
-        direction_letter = 'a'
     timer_clock = m4_clk
-    dir_prefix = f'meas_{direction_letter}_{m7_clk}_{m4_clk}' #'tmp_meas'
-    for sent_data_size in sizes:
-        print(f'measuring {sent_data_size} long data...')
-        response = measure(num_meas, sent_data_size, serial_config, meas_direction)
-        write_meas_to_file(dir_prefix, sent_data_size, num_meas, response,
-                           timer_clock)
+    if meas_direction == MeasDirection.both:
+        directions = [MeasDirection.m4_to_m7 for _ in range(len(sizes))] + \
+                     [MeasDirection.m7_to_m4 for _ in range(len(sizes))]
+        meas_configs = zip(sizes + sizes, directions)
+    else:
+        directions = [meas_direction for _ in range(len(sizes))]
+        meas_configs = zip(sizes, directions)
+
+    for sent_data_size, direction in meas_configs:
+        direction_letter = direction_to_letter(direction)
+        dir_prefix = f'meas_{direction_letter}_{m7_clk}_{m4_clk}' #'tmp_meas'
+        response = measure(num_meas, sent_data_size, serial_config, direction)
+        write_meas_to_file(dir_prefix, response, sent_data_size, num_meas, \
+                           timer_clock, direction)
 
 if __name__ == '__main__':
     main()
