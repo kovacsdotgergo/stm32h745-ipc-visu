@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import measurement
 
-def errorbar_latency_3d(clocks, latencies, size, title=True):
+def errorbar_latency_3d(clocks, latencies, size, direction='s', title=True):
     '''3d errorbar plot for latencies
     @param[in]  clocks  list of clock tuples (m7, m4) [MHz]
     @param[in]  latencies   list of latency tuples (mean, min, max)
@@ -25,13 +25,14 @@ def errorbar_latency_3d(clocks, latencies, size, title=True):
     # ax.set_yticklabels([0, None, None, None, 200])
     ax.set_zlabel('Latency mean, errorbar for min and max [us]')
     if title:
-        ax.set_title(f'Sending {size[0]} bytes from M7 to M4')
+        dir_text = 'from M7 to M4' if 's' == direction else 'from M4 to M7'
+        ax.set_title(f'Sending {size[0]} bytes {dir_text}')
     ax.set_xlim([0, 480])
     ax.set_ylim([0, 240])
     ax.set_zlim(0)
 
 
-def errorbar_datarate_3d(clocks, datarates, size, title=True):
+def errorbar_datarate_3d(clocks, datarates, size, direction='s', title=True):
     '''3d errorbar plot for datarates
     @param[in]  clocks  list of clock tuples (m4, m7) [MHz]
     @param[in]  datarates   list of datarate tuples (mean, min, max)
@@ -55,30 +56,30 @@ def errorbar_datarate_3d(clocks, datarates, size, title=True):
     # M stands for 1e6 in this case (Mega, not Mibi)
     ax.set_zlabel('Data rate mean, min and max [Mbyte/s]')
     if title:
-        ax.set_title(f'Sending {size[0]} bytes from M7 to M4')
+        dir_text = 'from M7 to M4' if 's' == direction else 'from M4 to M7'
+        ax.set_title(f'Sending {size[0]} bytes {dir_text}')
     ax.set_xlim([0, 480])
     ax.set_ylim([0, 240])
     ax.set_zlim(0)
 
 def main():
     '''Reading in measurements, calculating mean, std then visualizing'''
-    clocks = [(8, 8), (72, 72), (80, 10), (120, 30), (120, 120),\
-              (160, 10), (192, 12), (196, 98), (200, 200), (216, 27),\
-              (240, 240), (248, 62), (280, 140), (304, 152),\
-              (308, 77), (320, 40), (332, 166), (376, 96),\
-              (412, 206), (432, 27), (444, 111), (480, 240)] + [(240, 120), (480, 120), (480, 60)]
+    clocks = [(72, 72), (120, 120), (196, 98), (200, 200), (240, 120),
+              (240, 240), (248, 62), (280, 140), (304, 152), (308, 77),
+              ] # each greater than 40
     size = [256] # list for read_meas_from_files
 
-    latencies = [] # for storing tuple (mean, min, max)
-    datarates = [] # (mean, min, max)
-    for m7, m4 in clocks:
-        dir_prefix = f'meas_{m7}_{m4}'
-        # timer clock is always the same as the m4 core's clock
-        latencies.append(measurement.get_latencies(m4, dir_prefix, size)) # us
-        datarates.append(measurement.get_datarates(m4, dir_prefix, size)) # Mbyte/s
+    for direction in ['r', 's']:
+        latencies = [] # for storing tuple (mean, min, max)
+        datarates = [] # (mean, min, max)
+        for m7, m4 in clocks:
+            dir_prefix = f'meas_{direction}_{m7}_{m4}'
+            # timer clock is always the same as the m4 core's clock
+            latencies.append(measurement.get_latencies(m4, dir_prefix, size)) # us
+            datarates.append(measurement.get_datarates(m4, dir_prefix, size)) # Mbyte/s
 
-    errorbar_latency_3d(clocks, latencies, size, title=False)
-    errorbar_datarate_3d(clocks, datarates, size, title=False)
+        errorbar_latency_3d(clocks, latencies, size, direction, title=False)
+        errorbar_datarate_3d(clocks, datarates, size, direction, title=False)
 
     # show graph
     plt.show()

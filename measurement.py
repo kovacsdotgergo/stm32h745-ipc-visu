@@ -179,7 +179,7 @@ def upper_lower_from_minmax(list_of_tuples):
 
 def main():
     '''Measuring for several different sizes, saving the result to file'''
-    serial_config = SerialConfig('COM5', 115200, 8, 'N', 1)
+    serial_config = SerialConfig('COM5', 115200, 8, 'N', 1) 
     num_meas = 1024
 
     sizes_short = [1 if x==0 else 16*x for x in range(17)]
@@ -188,8 +188,8 @@ def main():
     #config begin
     sizes = sizes_long[1:] + sizes_short
     meas_direction = MeasDirection.both
-    m7_clk = 120
-    m4_clk = 120
+    m7_clk = 480
+    m4_clk = 240
     #config end
     timer_clock = m4_clk
     if meas_direction == MeasDirection.both:
@@ -203,6 +203,8 @@ def main():
     for sent_data_size, direction in meas_configs:
         direction_letter = direction_to_letter(direction)
         dir_prefix = f'meas_{direction_letter}_{m7_clk}_{m4_clk}' #'tmp_meas'
+        if not os.path.exists(dir_prefix):
+            os.makedirs(dir_prefix)
         response = measure(num_meas, sent_data_size, serial_config, direction)
         write_meas_to_file(dir_prefix, response, sent_data_size, num_meas, \
                            timer_clock, direction)

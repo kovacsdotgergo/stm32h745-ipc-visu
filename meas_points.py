@@ -2,18 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-def generate_points():
-    size = 16
-    for _ in range(10):
-        m7 = np.random.randint(0, 120+1, size) * 4
-        div = np.random.randint(0, 5, size)
-        m4 = m7 / 2**div
-        clocks = list(zip(m7, m4))
-        clocks.append((480, 240))
-        clocks.append((72, 72))
-        print(clocks)
-        visu_points(clocks)
-
+def generate_points(num_for_grad):
+    grads = [1, 2, 3, 4]
+    m4range = 240
+    m4 = np.random.randint(0, m4range, num_for_grad * len(grads)).tolist()
+    grad_rand = np.random.randint(0, len(grads), num_for_grad * len(grads)).tolist()
+    m7 = [grad_rand[i] for i in grads] * m4range
+    return list(zip(m7, m4)).append((480, 240))
 
 def make_dirs(clocks, filename_prefix='meas'):
     base_path = os.getcwd()
@@ -55,6 +50,11 @@ def main():
               (480, 240), (480, 60), (72, 72), (80, 10), (8, 8)]
     # clocks = [(72, 72), (248, 62), (240, 240), (280, 140), \
     #           (444, 111), (480, 240)]
+    clocks = [(72, 72), (120, 120), (196, 98), (200, 200), (240, 120),
+              (240, 240), (248, 62), (280, 140), (304, 152), (308, 77),
+              (332, 166), (376, 96), (412, 206), (444, 111), (480, 60),
+              (480, 120), (480, 240)] # each greater than 40
+    clocks = [(m7, m4) for m7, m4 in clocks if m4 > 40]
     print(sorted(clocks))
     visu_points(clocks)
     plt.show()
