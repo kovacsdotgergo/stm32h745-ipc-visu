@@ -3,6 +3,8 @@ meas_[rs]_[0-9]*_[0-9]*
 tmp_meas
 putty.log
 putty_72_72_initial
+D[0-9]*
+D[0-9]*_*
 .vscode
 venv
 __pycache__
