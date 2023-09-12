@@ -99,11 +99,11 @@ def read_meas_from_files(sizes, dir_prefix,
 
 def get_latencies(timer_clock, dir_prefix, sizes):
     '''Reads in measurement values (mean, min, max) and calculates
-        latencies
+        latencies, mean, min and max are np.ndarray() with size (len(sizes),)
     @param[in]  timer_clock timer clock frequency in [MHz]
     @param[in]  dir_prefix  name of the directory
     @param[in]  sizes    measured message sizes
-    @returns mean, min, max [us]'''
+    @returns mean(), min, max [us]'''
     all_meas_values = np.array(read_meas_from_files(sizes, dir_prefix))
     latency_mean = np.mean(all_meas_values, axis=1) / timer_clock # us
     latency_min = np.min(all_meas_values, axis=1) / timer_clock # us
@@ -111,7 +111,8 @@ def get_latencies(timer_clock, dir_prefix, sizes):
     return latency_mean, latency_min, latency_max
 
 def get_datarates(timer_clock, dir_prefix, sizes):
-    '''Reads measurement values (mean, min, max) and calculates datarates
+    '''Reads measurement values (mean, min, max) and calculates datarates,
+        mean, min and max are np.ndarray() with size (len(sizes),)
     @param[in]  timer_clock timer clock frequency in [MHz]
     @param[in]  dir_prefix  name of the directory
     @param[in]  sizes    measured message sizes
@@ -186,10 +187,11 @@ def main():
     sizes_long = [1 if x==0 else 1024*x for x in range(16)] + [512, 1536, 16380]
     sizes_max = [16380]
     #config begin
+    memory = 'D2_icache'
     sizes = sizes_long[1:] + sizes_short
     meas_direction = MeasDirection.both
     m7_clk = 480
-    m4_clk = 240
+    m4_clk = 60
     #config end
     timer_clock = m4_clk
     if meas_direction == MeasDirection.both:
@@ -203,6 +205,7 @@ def main():
     for sent_data_size, direction in meas_configs:
         direction_letter = direction_to_letter(direction)
         dir_prefix = f'meas_{direction_letter}_{m7_clk}_{m4_clk}' #'tmp_meas'
+        dir_prefix = os.path.join(memory, dir_prefix)
         if not os.path.exists(dir_prefix):
             os.makedirs(dir_prefix)
         response = measure(num_meas, sent_data_size, serial_config, direction)
