@@ -55,19 +55,17 @@ def main():
     clocks = visu_common.get_clocks_in_folder('D2_icache', prefix=f'meas_r_')
     size = [256] # list for read_meas_from_files
     mems = ['D2', 'D2_icache']
-    meas_type = 'datarate'
+    meas_type = 'latency'
 
     for mem in mems:
         for direction in ['r', 's']:
-            latencies = np.ndarray((len(clocks), 3, len(size)))
-            datarates = np.ndarray((len(clocks), 3, len(size)))
+            data = np.ndarray((len(clocks), 3, len(size)))
             for i, (m7, m4) in enumerate(clocks):
                 dir_prefix = os.path.join(mem, f'meas_{direction}_{m7}_{m4}')
                 # timer clock is always the same as the m4 core's clock
-                latencies[i] = measurement.get_latencies(m4, dir_prefix, size) # us
-                datarates[i] = measurement.get_datarates(m4, dir_prefix, size) # Mbyte/s
+                data[i] = measurement.get_and_calc_meas(m4, dir_prefix, size, meas_type)
 
-            errorbar_3dfull(clocks, datarates, size, meas_type, direction, 
+            errorbar_3dfull(clocks, data, size, meas_type, direction, 
                             mem, title=True)
 
     # show graph

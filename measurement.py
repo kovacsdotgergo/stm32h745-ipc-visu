@@ -78,31 +78,28 @@ def read_meas_from_files(sizes, dir_prefix,
         all_meas_values.append(cur_meas_values)
     return all_meas_values
 
-def get_latencies(timer_clock, dir_prefix, sizes):
-    '''Reads in measurement values (mean, min, max) and calculates
-        latencies, mean, min and max are np.ndarray() with size (len(sizes),)
-    @param[in]  timer_clock timer clock frequency in [MHz]
-    @param[in]  dir_prefix  name of the directory
-    @param[in]  sizes    measured message sizes
-    @returns np.array(mean, min, max), shape: (3, len(sizes)) [us]'''
+def get_and_calc_meas(timer_clock, dir_prefix, sizes, meas_type):
+    '''Reads measurement values (mean, min, max) and calculates datarates
+        or latencies
+    Inputs:
+        timer_clock     timer clock frequency in [MHz]
+        dir_prefix      name of the directory
+        sizes           measured message sizes
+        meas_type       'datarate' or 'latency'
+    Returns:
+        np.array(mean, min, max), shape: (3, len(sizes)) [Mbyte/s]'''
     all_meas_values = np.array(read_meas_from_files(sizes, dir_prefix))
-    latency_mean = np.mean(all_meas_values, axis=1) / timer_clock # us
-    latency_min = np.min(all_meas_values, axis=1) / timer_clock # us
-    latency_max = np.max(all_meas_values, axis=1) / timer_clock # us
-    return np.array((latency_mean, latency_min, latency_max))
-
-def get_datarates(timer_clock, dir_prefix, sizes):
-    '''Reads measurement values (mean, min, max) and calculates datarates,
-        mean, min and max are np.ndarray() with size (len(sizes),)
-    @param[in]  timer_clock timer clock frequency in [MHz]
-    @param[in]  dir_prefix  name of the directory
-    @param[in]  sizes    measured message sizes
-    @returns np.array(mean, min, max), shape: (3, len(sizes)) [Mbyte/s]'''
-    all_meas_values = np.array(read_meas_from_files(sizes, dir_prefix))
-    data_rate_min = sizes / np.max(all_meas_values, axis=1) * timer_clock # Mbyte/s
-    data_rate_max = sizes / np.min(all_meas_values, axis=1) * timer_clock # Mbyte/s
-    data_rate_mean = sizes / np.mean(all_meas_values, axis=1) * timer_clock # Mbyte/s
-    return np.array((data_rate_mean, data_rate_min, data_rate_max))
+    if 'datarate' == meas_type:
+        data_min = sizes / np.max(all_meas_values, axis=1) * timer_clock # Mbyte/s
+        data_max = sizes / np.min(all_meas_values, axis=1) * timer_clock # Mbyte/s
+        data_mean = sizes / np.mean(all_meas_values, axis=1) * timer_clock # Mbyte/s
+    elif 'latency' == meas_type:
+        data_mean = np.mean(all_meas_values, axis=1) / timer_clock # us
+        data_min = np.min(all_meas_values, axis=1) / timer_clock # us
+        data_max = np.max(all_meas_values, axis=1) / timer_clock # us
+    else:
+        raise RuntimeError('type not datarate of latency')
+    return np.array((data_mean, data_min, data_max))
 
 def get_all_latencies(clocks, sizes, meas_num=1024,\
                       dir_prefix_without_clk='meas_'):
@@ -122,11 +119,6 @@ def get_all_latencies(clocks, sizes, meas_num=1024,\
             (all_latencies, new_meas_values / m4), axis=0) #us
     return all_latencies
 
-class MeasType:
-    """Enum class describing the type of measurement"""
-    latency = 0
-    datarate = 1
-
 def get_each_for_clk(clocks, sizes, meas_type):
     '''
     @param[in]  clocks      array of clock pair tuples (m7, m4)
@@ -138,9 +130,9 @@ def get_each_for_clk(clocks, sizes, meas_type):
     all_values = np.empty((0, 3, len(sizes)))
     for m7, m4 in clocks:
         dir_prefix = f'meas_{m7}_{m4}'
-        if meas_type == MeasType.latency:
+        if meas_type == 'latency':
             new_values = get_latencies(m4, dir_prefix, sizes)
-        elif meas_type == MeasType.datarate:
+        elif meas_type == 'datarate':
             new_values = get_datarates(m4, dir_prefix, sizes)
         else: raise ValueError("Wrong type of measurement")
         new_values = upper_lower_from_minmax(list(zip(*new_values)))
