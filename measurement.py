@@ -167,7 +167,7 @@ def main():
     sizes = sizes_long[1:] + sizes_short
     meas_directions = ['r', 's']
     m7_clk = 240
-    m4_clk = 240
+    m4_clk = 60
     #config end
     timer_clock = m4_clk
 

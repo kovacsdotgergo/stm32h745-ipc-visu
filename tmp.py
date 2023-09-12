@@ -28,11 +28,22 @@ import regex
 # # visu.errorbar_data_rate(sizes, np_arr[:, 0], np_arr[:, 1:2].transpose())
 # # plt.show()
 # # print('h')
+x, y, z = [2, 3, 4], [3, 4, 5], [6, 7, 8]
+zerr = [0.2, 0.1, 0.1]
+x1, y1, z1 = [1, 2, 3], [2, 3, 4], [5, 6, 7]
+zerr1 = [0.1, 0.2, 0.1]
 
-# ls = [0, 1, 2, 0]
-# lsvalues = [5, 6, 4]
-# print([lsvalues[i] for i in ls])
-all = np.ndarray((2, 3, 2))
-ret = measurement.get_datarates(60, 'D2_icache/meas_r_480_60', [1, 128])
-print(all[:, 1].shape)
+ax = plt.figure().add_subplot(projection='3d')
+ax.set_title('a')
+ax.set_xlim([0, 12])
+ax.set_ylim([0, 13])
+ax.set_zlim(0)
+ax.errorbar(x, y, z, zerr=zerr, fmt='o', color='black', label='Pontok1')
+plot = ax.errorbar(x1, y1, z1, zerr=zerr1, fmt='o', color='red')
+plot[0].set_label('a')
+ax.legend()
+print(plot[0])
 
+
+plt.show()
+print('a')
