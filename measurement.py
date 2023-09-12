@@ -12,24 +12,6 @@ class SerialConfig:
         self.parity = parity
         self.stopbits = stopbits
 
-class MeasDirection:
-    """Enum class for direction of communication between the cores
-    """
-    m7_to_m4 = 0
-    m4_to_m7 = 1
-    both = 2
-
-def direction_to_letter(direction: MeasDirection) -> str:
-    """Returns the corresponding letter used in uart to the input
-    Note: only works for uart compatible letters, 'r' or 's', execpton 
-        otherwise"""
-    if MeasDirection.m4_to_m7 == direction:
-        return 'r'
-    elif MeasDirection.m7_to_m4 == direction:
-        return 's'
-    else:
-        raise ValueError("Not existing direction of measurement")
-
 def measure(num_meas, sent_data_size, serial_config, meas_direction) -> list:
     '''Function for measuring sent_data_size bytes, sending num_meas times
     '''
@@ -37,8 +19,7 @@ def measure(num_meas, sent_data_size, serial_config, meas_direction) -> list:
     # Set up the serial connection
     with serial.Serial(serial_config.port, serial_config.baud) as ser:
         # start char
-        direction_letter = direction_to_letter(meas_direction) #'r' or 's'
-        ser.write(direction_letter.encode('ascii'))
+        ser.write(meas_direction.encode('ascii')) #'r' or 's'
         response.append(ser.readline())
         # number of measurement repetition
         string_to_send = f'{num_meas}\r'.encode('ascii')
@@ -61,7 +42,7 @@ def write_meas_to_file(dir_prefix, response, sent_data_size, num_meas,\
     MODE = 'wb' if os.path.exists(fullpath) else 'xb'
     with open(fullpath, MODE) as file:
         # header
-        direction_info = 'M7 to M4' if MeasDirection.m7_to_m4 == direction else 'M4 to M7'
+        direction_info = 'M7 to M4' if 's' == direction else 'M4 to M7'
         file.write(f'Measurement repeated {num_meas} times, measured sending ' \
                 f'of {sent_data_size} bytes from {direction_info}, timer clock:' \
                 f'{timer_clock} MHz\n'.encode('ascii'))
@@ -103,12 +84,12 @@ def get_latencies(timer_clock, dir_prefix, sizes):
     @param[in]  timer_clock timer clock frequency in [MHz]
     @param[in]  dir_prefix  name of the directory
     @param[in]  sizes    measured message sizes
-    @returns mean(), min, max [us]'''
+    @returns np.array(mean, min, max), shape: (3, len(sizes)) [us]'''
     all_meas_values = np.array(read_meas_from_files(sizes, dir_prefix))
     latency_mean = np.mean(all_meas_values, axis=1) / timer_clock # us
     latency_min = np.min(all_meas_values, axis=1) / timer_clock # us
     latency_max = np.max(all_meas_values, axis=1) / timer_clock # us
-    return latency_mean, latency_min, latency_max
+    return np.array((latency_mean, latency_min, latency_max))
 
 def get_datarates(timer_clock, dir_prefix, sizes):
     '''Reads measurement values (mean, min, max) and calculates datarates,
@@ -116,12 +97,12 @@ def get_datarates(timer_clock, dir_prefix, sizes):
     @param[in]  timer_clock timer clock frequency in [MHz]
     @param[in]  dir_prefix  name of the directory
     @param[in]  sizes    measured message sizes
-    @returns mean, min, max [Mbyte/s]'''
+    @returns np.array(mean, min, max), shape: (3, len(sizes)) [Mbyte/s]'''
     all_meas_values = np.array(read_meas_from_files(sizes, dir_prefix))
     data_rate_min = sizes / np.max(all_meas_values, axis=1) * timer_clock # Mbyte/s
     data_rate_max = sizes / np.min(all_meas_values, axis=1) * timer_clock # Mbyte/s
     data_rate_mean = sizes / np.mean(all_meas_values, axis=1) * timer_clock # Mbyte/s
-    return data_rate_mean, data_rate_min, data_rate_max
+    return np.array((data_rate_mean, data_rate_min, data_rate_max))
 
 def get_all_latencies(clocks, sizes, meas_num=1024,\
                       dir_prefix_without_clk='meas_'):
@@ -167,16 +148,19 @@ def get_each_for_clk(clocks, sizes, meas_type):
         all_values = np.concatenate((all_values, new_values), axis=0)
     return all_values
 
-def upper_lower_from_minmax(list_of_tuples):
+def upper_lower_from_minmax(mean_min_max):
     '''calculating lower and upper error from min and max
-    @param[in]  list    input list of (mean, min, max) tuples
-            
-    @returns    output list of (mean, lower_err, upper_err) tuples
+    Input:
+        np.array of shape (x, 3, y), holding mean, min, max     
+    Returns:
+        np.array of shape (x, 3, y), holding mean, lower error, upper error
     '''
-    ret = []
-    for (mean, min_v, max_v) in list_of_tuples:
-        ret.append((mean, mean-min_v, max_v-mean))
-    return ret
+    assert len(mean_min_max.shape) == 3 and mean_min_max.shape[1] == 3
+    mean_lower_upper = np.ndarray(mean_min_max.shape)
+    mean_lower_upper[:, 0] = mean_min_max[:, 0] # mean
+    mean_lower_upper[:, 1] = mean_min_max[:, 0] - mean_min_max[:, 1] # mean - min
+    mean_lower_upper[:, 2] = mean_min_max[:, 2] - mean_min_max[:, 0] # max - mean
+    return mean_lower_upper
 
 def main():
     '''Measuring for several different sizes, saving the result to file'''
@@ -189,28 +173,21 @@ def main():
     #config begin
     memory = 'D2_icache'
     sizes = sizes_long[1:] + sizes_short
-    meas_direction = MeasDirection.both
-    m7_clk = 480
-    m4_clk = 60
+    meas_directions = ['r', 's']
+    m7_clk = 240
+    m4_clk = 240
     #config end
     timer_clock = m4_clk
-    if meas_direction == MeasDirection.both:
-        directions = [MeasDirection.m4_to_m7 for _ in range(len(sizes))] + \
-                     [MeasDirection.m7_to_m4 for _ in range(len(sizes))]
-        meas_configs = zip(sizes + sizes, directions)
-    else:
-        directions = [meas_direction for _ in range(len(sizes))]
-        meas_configs = zip(sizes, directions)
 
-    for sent_data_size, direction in meas_configs:
-        direction_letter = direction_to_letter(direction)
-        dir_prefix = f'meas_{direction_letter}_{m7_clk}_{m4_clk}' #'tmp_meas'
-        dir_prefix = os.path.join(memory, dir_prefix)
-        if not os.path.exists(dir_prefix):
-            os.makedirs(dir_prefix)
-        response = measure(num_meas, sent_data_size, serial_config, direction)
-        write_meas_to_file(dir_prefix, response, sent_data_size, num_meas, \
-                           timer_clock, direction)
+    for direction in meas_directions:
+        for sent_data_size in sizes:
+            dir_prefix = f'meas_{direction}_{m7_clk}_{m4_clk}' #'tmp_meas'
+            dir_prefix = os.path.join(memory, dir_prefix)
+            if not os.path.exists(dir_prefix):
+                os.makedirs(dir_prefix)
+            response = measure(num_meas, sent_data_size, serial_config, direction)
+            write_meas_to_file(dir_prefix, response, sent_data_size, num_meas, \
+                            timer_clock, direction)
 
 if __name__ == '__main__':
     main()

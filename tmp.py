@@ -33,9 +33,6 @@ import regex
 # lsvalues = [5, 6, 4]
 # print([lsvalues[i] for i in ls])
 all = np.ndarray((2, 3, 2))
-ret = np.array(measurement.get_datarates(60, 'D2_icache/meas_r_480_60', [1, 128]))
-print(all[1].shape, ret.shape)
-all[1] = ret
-all[0] = ret
-print(ret)
-print(all)
+ret = measurement.get_datarates(60, 'D2_icache/meas_r_480_60', [1, 128])
+print(all[:, 1].shape)
+
