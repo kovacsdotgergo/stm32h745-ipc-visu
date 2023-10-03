@@ -68,7 +68,16 @@ def main():
             (480, 120), (480, 240)] # each greater than 40
    
     size = [256] # list for read_meas_from_files
-    mems = ['D2', 'D2_icache', 'D1', 'D3']
+    mems = ['D3_idcache_mpu_ncacheable',
+            'D3']
+    mems = ['D2_idcache_mpu_ncacheable',
+            'D2']
+    mems = ['D1_idcache_mpu_ncacheable',
+            'D1']
+    mems = ['D2', 'D2_icache', 'D1', 'D1_idcache_mpu_ncacheable', 'D3', 'D2_idcache_mpu_wrth_nalloc', 'D2_idcache_mpu_ncacheable']
+    mems = ['D1_idcache_mpu_ncacheable',
+            'D2_idcache_mpu_ncacheable',
+            'D3_idcache_mpu_ncacheable',]
     meas_type = 'datarate'
 
     for direction in ['r', 's']:

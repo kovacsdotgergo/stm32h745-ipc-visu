@@ -81,11 +81,13 @@ def read_meas_from_files(sizes, dir_prefix,
 def get_and_calc_meas(timer_clock, dir_prefix, sizes, meas_type):
     '''Reads measurement values (mean, min, max) and calculates datarates
         or latencies
-    Inputs:
-        timer_clock     timer clock frequency in [MHz]
-        dir_prefix      name of the directory
-        sizes           measured message sizes
-        meas_type       'datarate' or 'latency'
+
+    Args:
+        timer_clock: timer clock frequency in [MHz]
+        dir_prefix: name of the directory
+        sizes: measured message sizes
+        meas_type: 'datarate' or 'latency'
+
     Returns:
         np.array(mean, min, max), shape: (3, len(sizes)) [Mbyte/s]'''
     all_meas_values = np.array(read_meas_from_files(sizes, dir_prefix))
@@ -130,11 +132,7 @@ def get_each_for_clk(clocks, sizes, meas_type):
     all_values = np.empty((0, 3, len(sizes)))
     for m7, m4 in clocks:
         dir_prefix = f'meas_{m7}_{m4}'
-        if meas_type == 'latency':
-            new_values = get_latencies(m4, dir_prefix, sizes)
-        elif meas_type == 'datarate':
-            new_values = get_datarates(m4, dir_prefix, sizes)
-        else: raise ValueError("Wrong type of measurement")
+        new_values = get_and_calc_meas(m4, dir_prefix, sizes, meas_type)
         new_values = upper_lower_from_minmax(list(zip(*new_values)))
         new_values = np.expand_dims(np.array(new_values).T, axis=0)
         all_values = np.concatenate((all_values, new_values), axis=0)
@@ -163,10 +161,10 @@ def main():
     sizes_long = [1 if x==0 else 1024*x for x in range(16)] + [512, 1536, 16380]
     sizes_max = [16380]
     #config begin
-    memory = 'D2_icache'
+    memory = 'D1_idcache_mpu_ncacheable'
     sizes = sizes_long[1:] + sizes_short
     meas_directions = ['r', 's']
-    m7_clk = 240
+    m7_clk = 120
     m4_clk = 60
     #config end
     timer_clock = m4_clk
