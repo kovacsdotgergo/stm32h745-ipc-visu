@@ -161,11 +161,11 @@ def main():
     sizes_long = [1 if x==0 else 1024*x for x in range(16)] + [512, 1536, 16380]
     sizes_max = [16380]
     #config begin
-    memory = 'D1_idcache_mpu_ncacheable'
+    memory = 'D3_idcache_mpu_ncacheable_release_barrier'
     sizes = sizes_long[1:] + sizes_short
     meas_directions = ['r', 's']
     m7_clk = 120
-    m4_clk = 60
+    m4_clk = 120
     #config end
     timer_clock = m4_clk
 

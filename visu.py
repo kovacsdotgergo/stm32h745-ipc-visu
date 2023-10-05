@@ -58,16 +58,21 @@ def histogram_latency(clocks, sizes, all_latencies):
 def main():
     '''Reading in measurements, calculating mean, std then visualizing'''
     configs = [{'mem': 'D2', 'clk': (480, 240)},\
+               {'mem': 'D2_icache', 'clk': (480, 240)},\
                {'mem': 'D2_idcache_mpu_ncacheable', 'clk': (480, 240)},\
                {'mem': 'D1', 'clk': (480, 240)},
                {'mem': 'D1_idcache_mpu_ncacheable', 'clk': (480, 240)},
                {'mem': 'D3', 'clk': (480, 240)},
+               {'mem': 'D3_idcache_mpu_ncacheable_release', 'clk': (480, 240)},
                {'mem': 'D3_idcache_mpu_ncacheable', 'clk': (480, 240)}]
-    meas_type = 'datarate'
+    configs = [{'mem': 'D2_idcache_mpu_ncacheable', 'clk': (480, 60)},\
+               {'mem': 'D2_idcache_mpu_ncacheable', 'clk': (240, 60)},
+               {'mem': 'D2_idcache_mpu_ncacheable', 'clk': (120, 60)},]
+    meas_type = 'latency'
     
     dir = f'{configs[0]["mem"]}/meas_r_{configs[0]["clk"][0]}_{configs[0]["clk"][1]}'
     # sizes = [1 if x==0 else 16*x for x in range(17)] # [2048*x for x in range(17)]
-    sizes = sorted(visu_common.get_sizes(dir))
+    sizes = sorted(visu_common.get_sizes(dir, size_lambda=lambda size: size < 260))
 
     for direction in ['r', 's']:
         data = np.ndarray((len(configs), 3, len(sizes)))

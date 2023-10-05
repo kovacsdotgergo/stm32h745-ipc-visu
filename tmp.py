@@ -30,3 +30,6 @@ import regex
 # # print('h')
 
 dicts = [{'mem': 'D2', 'clk': (120, 120)}, {'mem': 'D2', 'clk': (120, 120)}]
+
+import visu_common
+visu_common.get_mems(os.curdir)

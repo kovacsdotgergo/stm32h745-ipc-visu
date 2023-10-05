@@ -78,7 +78,11 @@ def main():
     mems = ['D1_idcache_mpu_ncacheable',
             'D2_idcache_mpu_ncacheable',
             'D3_idcache_mpu_ncacheable',]
-    meas_type = 'datarate'
+    mems = ['D3_idcache_mpu_ncacheable_release',
+            'D3_idcache_mpu_ncacheable_release_barrier',
+            'D3_idcache_mpu_ncacheable',
+            'D3']
+    meas_type = 'latency'
 
     for direction in ['r', 's']:
         ax = plt.figure().add_subplot(111, projection='3d')
