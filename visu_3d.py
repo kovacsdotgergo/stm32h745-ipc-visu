@@ -78,7 +78,7 @@ def main():
     #         (480, 120), (480, 240)] # each greater than 40
    
     size = [256] # list for read_meas_from_files
-    mems = visu_common.get_mems('.', r'D[0-9]')
+    mems = visu_common.get_mems('.', r'D3')
     meas_type = 'latency'
 
     cmap = mpl.colormaps['tab10'].colors

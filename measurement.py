@@ -155,17 +155,17 @@ def upper_lower_from_minmax(mean_min_max):
 def main():
     '''Measuring for several different sizes, saving the result to file'''
     serial_config = SerialConfig('COM5', 115200, 8, 'N', 1) 
-    num_meas = 1024
+    num_meas = 65536
 
     sizes_short = [1 if x==0 else 16*x for x in range(17)]
     sizes_long = [1 if x==0 else 1024*x for x in range(16)] + [512, 1536, 16380]
     sizes_max = [16380]
     #config begin
-    memory = 'D3_idcache_mpu_ncacheable_release_barrier'
-    sizes = sizes_long[1:] + sizes_short
+    memory = os.path.join('pilot', 'D3')
+    sizes = [1, 256, 4096, 16380]#sizes_long[1:] + sizes_short
     meas_directions = ['r', 's']
-    m7_clk = 120
-    m4_clk = 120
+    m7_clk = 480
+    m4_clk = 240
     #config end
     timer_clock = m4_clk
 
