@@ -7,4 +7,5 @@ D[0-9]*
 D[0-9]*_*
 .vscode
 venv
+figures
 __pycache__

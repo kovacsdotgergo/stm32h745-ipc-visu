@@ -42,6 +42,18 @@ def histogram_intervals(raw_meas, title, std_center=False):
     print(title, std, (conf_int[1]-conf_int[0])/mean*100)
     print(np.unique(raw_meas))
 
+# def get_raw_foreach(base_path, mems, directions, clocks_lambda, sizes_lambda)
+#     mems = visu_common.get_mems('pilot')
+#     for mem in mems:
+#         dir_prefix = os.path.join('pilot', mem)
+
+#         directions = ['s', 'r']
+#         for direction in directions:
+#             clocks = visu_common.get_clocks_in_folder(dir_prefix, prefix=f'meas_{direction}_')
+#             for m7, m4 in clocks:
+#                 measurement_folder = os.path.join(dir_prefix, f'meas_{direction}_{m7}_{m4}')
+#                 sizes = [16380] #visu_common.get_sizes(measurement_folder)
+#                 raw = measurement.read_meas_from_files(sizes, measurement_folder)
 
 def main():
     'Main functions, that draws the histogram of the pilot measurements'
