@@ -17,24 +17,28 @@ def if_small_size(size):
 
 def main():
     '''Printing and writing out all final plots'''
+    # =====================================================================
     # Histogram
-    # mems = visu_common.get_mems('pilot')
-    # for mem in mems:
-    #     dir_prefix = os.path.join('pilot', mem)
-
-    #     directions = ['s', 'r']
-    #     for direction in directions:
-    #         clocks = visu_common.get_clocks_in_folder(dir_prefix, prefix=f'meas_{direction}_')
-    #         for m7, m4 in clocks:
-    #             measurement_folder = os.path.join(dir_prefix, f'meas_{direction}_{m7}_{m4}')
-    #             sizes = [16380] #visu_common.get_sizes(measurement_folder)
-    #             raw = measurement.read_meas_from_files(sizes, measurement_folder)
-
-    #             # for raw_per_size, size in raw, sizes:
-    #             plt.figure()
-    #             title = f'data size:{sizes[0]}, mem: {mem},\n' \
-    #                     f'M7: {m7}, M4: {m4}, direction:{direction}'
-    #             histogram.histogram_intervals(raw, title)
+    filename = 'histogram.pdf'
+    mem = 'D3_idcache_mpu_ncacheable_release' #visu_common.get_mems('pilot', pattern=r'D3_.*')
+    dir_prefix = os.path.join('pilot', mem)
+    plt.figure(figsize=(10, 9.5), layout='tight')
+    i = 0
+    for direction in ['r', 's']:
+        clocks = visu_common.get_clocks_in_folder(dir_prefix, prefix=f'meas_{direction}_')
+        for m7, m4 in clocks:
+            measurement_folder = os.path.join(dir_prefix, f'meas_{direction}_{m7}_{m4}')
+            sizes = [16380] #visu_common.get_sizes(measurement_folder)
+            raw = measurement.read_meas_from_files(sizes, measurement_folder)
+            # for raw_per_size, size in raw, sizes:
+            plt.subplot(221 + i)
+            dir_txt = 'M7 to M4' if direction=='s' else 'M4 to M7'
+            title = f'Size:{sizes[0]} B, M7: {m7} MHz, M4: {m4} MHz, {dir_txt}'
+            histogram.histogram_intervals(raw, title)
+            i = i + 1
+    out = os.path.join('figures', filename)
+    if not os.path.exists(out):
+        plt.savefig(out)
     
     # =====================================================================
     # initial plot to show difference between release and debug, long and short latency and datarate
@@ -93,7 +97,7 @@ def main():
             plt.savefig(out)
 
     # =====================================================================
-    # 3d clock dependency base 
+    # 3d clock dependency base
     size = 256
     mems = visu_common.get_mems('.', r'D3')
     filename = 'base_3d.pdf'
@@ -105,14 +109,16 @@ def main():
                 ax = fig.add_subplot(221 + i, projection='3d', sharez=ax)
             else:
                 ax = fig.add_subplot(221 + i, projection='3d')
-            visu_3d.final3d_foreach(size, mems, direction, ax, meas_type=meas_type, if_cut=True, stride=20)
+            visu_3d.final3d_foreach(size, mems, direction, ax, 
+                                    meas_type=meas_type, if_cut=True,
+                                    stride=20)
             i = i + 1
     out = os.path.join('figures', filename)
     if not os.path.exists(out):
         plt.savefig(out)
 
     # =====================================================================
-    # difference among the memories plot for function of size todo 
+    # difference between the memories plot for function of size todo 
     configs = [{'mem': 'D1', 'clk': (240, 240)},
                {'mem': 'D2', 'clk': (240, 240)},
                {'mem': 'D3', 'clk': (240, 240)},]
@@ -135,7 +141,7 @@ def main():
         plt.savefig(out)
 
     # =====================================================================
-    # difference among the memories 3d
+    # difference between the memories 3d
     size = 4096
     mems = visu_common.get_mems('.', r'D[0-9]')
     filename = 'memories_3d.pdf'
@@ -158,10 +164,10 @@ def main():
         plt.savefig(out)
 
     # =====================================================================
-    # difference among the memories with icache and optimization (2d only)
+    # difference between all cache options for one memory
     # todo
     # =====================================================================
-    # difference among the memories with cache and mpu todo (2d and 3d) 
+    # difference between the memories with cache and mpu
     size = 16380
     mems = visu_common.get_mems('.', r'D[0-9]_idcache_mpu_ncacheable')
     filename = 'memories_cache_3d.pdf'
