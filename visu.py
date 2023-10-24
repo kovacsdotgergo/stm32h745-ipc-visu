@@ -21,14 +21,14 @@ def errorbars(configs, sizes, data, meas_type):
 
 def setup_errorbars(meas_type, direction):
     '''Annotate errorbar plot'''
-    dir_text = 'M7 to M4' if direction == 's' else 'M4 to M7'
-    plt.title(f'{meas_type} of the communication ({dir_text})')
+    dir_text = 'Sending from M7 to M4' if direction == 's' else 'Sending from M4 to M7'
+    plt.title(dir_text)
     plt.ylim(0)
     plt.grid()
-    plt.legend(title='M7 and M4 clk [MHz]')
-    unit = 'us' if meas_type == 'latency' else 'Mbyte/s'
-    plt.ylabel(f'{meas_type} (avg, min, max) [{unit}]')
-    plt.xlabel('Sent data size [byte]')
+    plt.legend(title='Memory, M7, M4 clk [MHz]')
+    unit = 'us' if meas_type == 'latency' else 'MB/s'
+    plt.ylabel(f'{meas_type.capitalize()} [{unit}]')
+    plt.xlabel('Data size [B]')
 
 
 def histogram_latency(clocks, sizes, all_latencies):
@@ -54,6 +54,22 @@ def histogram_latency(clocks, sizes, all_latencies):
                      label=f'{m7}, {m4}')
         plt.grid()
         plt.legend(loc='upper right', title='M7 and M4 clk [MHz]')
+
+def final_size_func_foreach(configs, meas_type, direction,
+                            size_lambda=lambda size: size < 260):
+    '''Draws complete final plot for each config'''
+    size_dir = f'{configs[0]["mem"]}/meas_r_{configs[0]["clk"][0]}_{configs[0]["clk"][1]}'
+    # sizes = [1 if x==0 else 16*x for x in range(17)] # [2048*x for x in range(17)]
+    sizes = sorted(visu_common.get_sizes(size_dir, size_lambda=size_lambda))
+
+    data = np.ndarray((len(configs), 3, len(sizes)))
+    for i, config in enumerate(configs):
+        mem, (m7, m4) = config['mem'], config['clk']
+        dir = f'{mem}/meas_{direction}_{m7}_{m4}'
+        data[i] = measurement.get_and_calc_meas(m4, dir, sizes, meas_type)
+    data = measurement.upper_lower_from_minmax(data)
+    errorbars(configs, sizes, data, meas_type)
+    setup_errorbars(meas_type, direction)
 
 def main():
     '''Reading in measurements, calculating mean, std then visualizing'''

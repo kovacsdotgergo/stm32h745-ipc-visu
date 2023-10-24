@@ -50,20 +50,22 @@ def errorbar_3d(clocks, data, ax, label, color):
 
 def setup_ax(ax, direction, meas_type, size):
     '''Sets up all annotation on the 3d plot'''
-    ax.set_xlabel('M7 core clock [MHz]')
-    ax.set_ylabel('M4 core clock [MHz]')
-    zlabel = 'Datarate errorbar [Mbyte/s]' if \
+    ax.set_xlabel('M7 clk [MHz]')
+    ax.set_ylabel('M4 clk [MHz]')
+    zlabel = 'Datarate [MB/s]' if \
             'datarate' == meas_type else \
-            'Latency errorbar [us]'
+            'Latency [us]'
     ax.set_zlabel(zlabel)
     dir_text = 'from M7 to M4' if 's' == direction else 'from M4 to M7'
     ax.set_title(f'{size[0]} B {dir_text}')
     ax.set_xlim([0, 480])
+    ax.set_xticks(np.arange(5)*120)
     ax.set_ylim([0, 240])
+    ax.set_yticks(np.arange(5)*60)
     ax.set_zlim(0)
     ax.legend()
 
-def model_grid(m7, m4, pred, ax, color, if_cut=False):
+def model_grid(m7, m4, pred, ax, color, if_cut=False, stride=34):
     '''3d plot without figure and annotation
     Grid for the clocks and using it for a wireframe for pred
     Args:
@@ -81,11 +83,11 @@ def model_grid(m7, m4, pred, ax, color, if_cut=False):
         pred_edge = pred[mask]
         plt.plot(m7_edge, m4_edge, pred_edge, color=color, zorder=2,
                 linestyle='dashed')
-    ax.plot_wireframe(m7_grid, m4_grid, pred, rstride=34, cstride=34,
+    ax.plot_wireframe(m7_grid, m4_grid, pred, rstride=stride, cstride=stride,
                       color=color, zorder=2, linestyle='dashed')
 
-def full3d_foreach(size, mems, direction, ax, meas_type='latency',
-                   clock_lambda=lambda _,m4: m4>=60, if_cut=False):
+def final3d_foreach(size, mems, direction, ax, meas_type='latency',
+                   clock_lambda=lambda _,m4: m4>=60, if_cut=False, stride=34):
     '''Draw the 3d plots for the given size and mems
     Args:
         cut: boolean if the invalid clocks should be cut off'''
@@ -95,10 +97,10 @@ def full3d_foreach(size, mems, direction, ax, meas_type='latency',
     wire_cmap = mpl.colors.to_rgba_array(cmap, wire_alpha)
 
     if meas_type == 'latency':
-        ax.view_init(elev=30, azim=45)
+        ax.view_init(elev=30, azim=60)
     elif meas_type == 'datarate':
-        ax.view_init(elev=30, azim=-135)
-        
+        ax.view_init(elev=30, azim=-120)
+
     for color_idx, mem in enumerate(mems):
         clocks = visu_common.get_clocks_in_folder(
             mem, prefix=f'meas_{direction}_', clock_lambda=clock_lambda)
@@ -114,7 +116,7 @@ def full3d_foreach(size, mems, direction, ax, meas_type='latency',
             # Predictions by the model
         model = linear_model.LinearModel('models.json', mem, direction)
         m7, m4, pred = model.get_grid_for_range(clocks, size, meas_type)
-        model_grid(m7, m4, pred, ax, wire_cmap[color_idx], if_cut=if_cut)
+        model_grid(m7, m4, pred, ax, wire_cmap[color_idx], if_cut=if_cut, stride=stride)
     setup_ax(ax, direction, meas_type, size)
 
 def main():
@@ -128,7 +130,7 @@ def main():
     mems = visu_common.get_mems('.', r'D3.*')
     meas_type = 'datarate'
     clock_lambda = lambda m7, m4: m4 >= 60
-    if_cut = True
+    if_cut = False
 
     cmap = mpl.colormaps['tab10'].colors
     wire_alpha = 0.6
