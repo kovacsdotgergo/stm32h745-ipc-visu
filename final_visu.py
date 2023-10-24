@@ -7,6 +7,14 @@ import histogram
 import visu_3d
 import visu
 
+def if_large_size(size):
+    '''Fuction to return sizes for the long size plots'''
+    return (size % 64) == 0 or size == 1
+
+def if_small_size(size):
+    '''Function to return sizes for the short size plots'''
+    return size < 256
+
 def main():
     '''Printing and writing out all final plots'''
     # Histogram
@@ -29,6 +37,29 @@ def main():
     #             histogram.histogram_intervals(raw, title)
     
     # =====================================================================
+    # initial plot to show difference between release and debug, long and short latency and datarate
+    configs = [{'mem': 'D3', 'clk': (240, 240)},
+               {'mem': 'D3_idcache_mpu_ncacheable_release', 'clk': (240, 240)},
+               {'mem': 'D3_idcache_mpu_ncacheable', 'clk': (240, 240)},]
+    filename = 'release_and_length_size.pdf'
+    direction = 's'
+    i = 0
+    plt.figure(figsize=(10, 9.5), layout='tight')
+    for meas_type in ['latency', 'datarate']:
+        for size_lambda in [if_small_size, if_large_size]:
+            ax = plt.subplot(221 + i)
+            # if meas_type == 'latency':
+            #     plt.ylim(0, 60)
+            # else:
+            #     plt.ylim(0, 17)
+            visu.final_size_func_foreach(configs, meas_type, direction,
+                                        size_lambda=size_lambda)
+            i = i + 1
+    out = os.path.join('figures', filename)
+    if not os.path.exists(out):
+        plt.savefig(out)
+
+    # =====================================================================
     # size plot clock dependecy 
     configs_all = [[{'mem': 'D3', 'clk': (480, 60)},
                     {'mem': 'D3', 'clk': (240, 60)},
@@ -36,29 +67,30 @@ def main():
                    [{'mem': 'D3', 'clk': (240, 240)},
                     {'mem': 'D3', 'clk': (240, 120)},
                     {'mem': 'D3', 'clk': (240, 60)},],]
-    filename_all = ['_clockm7_size.pdf', '_clockm4_size.pdf']
+    filename_all = ['clock_m7_size.pdf', 'clock_m4_size.pdf']
     for conf_idx, (configs, filename) in enumerate(zip(configs_all, filename_all)):
-        for meas_type in ['latency', 'datarate']:
-            i = 0
-            plt.figure(figsize=(10, 9.5), layout='tight')
-            for size_lambda in [lambda size: size<=256, lambda _: True]:
-                for direction in ['r', 's']:
-                    if meas_type == 'latency' and (i == 1 or i == 3):
-                            ax = plt.subplot(221 + i, sharey=ax) # second col
+        i = 0
+        plt.figure(figsize=(10, 9.5), layout='tight')
+        for size_lambda, meas_type in zip([if_small_size, if_large_size],
+                                          ['latency', 'datarate']):
+            for direction in ['r', 's']:
+                ax = plt.subplot(221 + i)
+                if conf_idx == 0: # effect of m7 figure
+                    if meas_type == 'latency':
+                        plt.ylim(0, 150)
                     else:
-                            ax = plt.subplot(221 + i)
-                    if meas_type == 'datarate':
-                        lim_fst_row, lim_sec_row = (7, 15) if conf_idx==1 else (2.25, 5) # y limits
-                        if i == 0 or i == 1: # first row
-                            plt.ylim(0, lim_fst_row)
-                        else:
-                            plt.ylim(0, lim_sec_row)
-                    visu.final_size_func_foreach(configs, meas_type, direction,
-                                                size_lambda=size_lambda)
-                    i = i + 1
-            out = os.path.join('figures', meas_type + filename)
-            if not os.path.exists(out):
-                plt.savefig(out)
+                        plt.ylim(0, 5)
+                else:
+                    if meas_type == 'latency':
+                        plt.ylim(0, 140)
+                    else:
+                        plt.ylim(0, 16)
+                visu.final_size_func_foreach(configs, meas_type, direction,
+                                            size_lambda=size_lambda)
+                i = i + 1
+        out = os.path.join('figures', filename)
+        if not os.path.exists(out):
+            plt.savefig(out)
 
     # =====================================================================
     # 3d clock dependency base 
@@ -87,7 +119,7 @@ def main():
     filename = 'mems_size.pdf'
     i = 0
     plt.figure(figsize=(10, 9.5), layout='tight')
-    for size_lambda, meas_type in zip([lambda size: size<=256, lambda _: True],
+    for size_lambda, meas_type in zip([if_small_size, if_large_size],
                                       ['latency', 'datarate']):
         for direction in ['r', 's']:
             ax = plt.subplot(221 + i)
@@ -162,7 +194,7 @@ def main():
     filename = 'all_mems_size.pdf'
     i = 0
     plt.figure(figsize=(10, 9.5), layout='tight')
-    for size_lambda, meas_type in zip([lambda size: size<=512, lambda _: True],
+    for size_lambda, meas_type in zip([lambda size: size<=512, if_large_size],
                                       ['latency', 'datarate']):
         for direction in ['r', 's']:
             ax = plt.subplot(221 + i)
@@ -178,7 +210,7 @@ def main():
         plt.savefig(out)
 
     # show graph
-    #plt.show()
+    plt.show()
 
 if __name__ == '__main__':
     main()
