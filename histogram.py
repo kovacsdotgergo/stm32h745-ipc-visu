@@ -36,7 +36,7 @@ def histogram_intervals(raw_meas, title, std_center=False):
     histogram(raw_meas, title)
     if std_center:
         plt.xlim(mean-d*std, mean+d*std)
-    plt.ylim(0, 10000)
+    plt.ylim(5e-1, 1e5)
     # todo: checking why only even
     # print(title, std, (conf_int[1]-conf_int[0])/mean*100)
     # print(np.unique(raw_meas))

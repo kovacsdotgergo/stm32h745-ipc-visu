@@ -1,5 +1,6 @@
 import os
 import matplotlib.pyplot as plt
+import numpy as np
 
 import measurement
 import visu_common
@@ -9,11 +10,11 @@ import visu
 
 def if_large_size(size):
     '''Fuction to return sizes for the long size plots'''
-    return (size % 64) == 0 or size == 1
+    return (size % 64) == 0 or size == 1 or size == 16380
 
 def if_small_size(size):
     '''Function to return sizes for the short size plots'''
-    return size < 256
+    return size <= 256
 
 def main():
     '''Printing and writing out all final plots'''
@@ -22,19 +23,20 @@ def main():
     filename = 'histogram.pdf'
     mem = 'D3_idcache_mpu_ncacheable_release' #visu_common.get_mems('pilot', pattern=r'D3_.*')
     dir_prefix = os.path.join('pilot', mem)
+    m7, m4 = 480, 240
     plt.figure(figsize=(10, 9.5), layout='tight')
     i = 0
     for direction in ['r', 's']:
-        clocks = visu_common.get_clocks_in_folder(dir_prefix, prefix=f'meas_{direction}_')
-        for m7, m4 in clocks:
+        for sizes in [[256], [16380]]:
             measurement_folder = os.path.join(dir_prefix, f'meas_{direction}_{m7}_{m4}')
-            sizes = [16380] #visu_common.get_sizes(measurement_folder)
+            #sizes = [16380] #visu_common.get_sizes(measurement_folder)
             raw = measurement.read_meas_from_files(sizes, measurement_folder)
             # for raw_per_size, size in raw, sizes:
             plt.subplot(221 + i)
             dir_txt = 'M7 to M4' if direction=='s' else 'M4 to M7'
             title = f'Size:{sizes[0]} B, M7: {m7} MHz, M4: {m4} MHz, {dir_txt}'
             histogram.histogram_intervals(raw, title)
+            plt.xticks(rotation=12)
             i = i + 1
     out = os.path.join('figures', filename)
     if not os.path.exists(out):
@@ -52,10 +54,10 @@ def main():
     for meas_type in ['latency', 'datarate']:
         for size_lambda in [if_small_size, if_large_size]:
             ax = plt.subplot(221 + i)
-            # if meas_type == 'latency':
-            #     plt.ylim(0, 60)
-            # else:
-            #     plt.ylim(0, 17)
+            if size_lambda == if_large_size:
+                plt.xticks(np.arange(9)*2048, rotation=12)
+            else:
+                plt.xticks(np.arange(5)*64)
             visu.final_size_func_foreach(configs, meas_type, direction,
                                         size_lambda=size_lambda)
             i = i + 1
@@ -82,13 +84,17 @@ def main():
                 if conf_idx == 0: # effect of m7 figure
                     if meas_type == 'latency':
                         plt.ylim(0, 150)
+                        plt.xticks(np.arange(5)*64)
                     else:
                         plt.ylim(0, 5)
+                        plt.xticks(np.arange(9)*2048, rotation=12)
                 else:
                     if meas_type == 'latency':
                         plt.ylim(0, 140)
+                        plt.xticks(np.arange(5)*64)
                     else:
                         plt.ylim(0, 16)
+                        plt.xticks(np.arange(9)*2048, rotation=12)
                 visu.final_size_func_foreach(configs, meas_type, direction,
                                             size_lambda=size_lambda)
                 i = i + 1
@@ -118,7 +124,7 @@ def main():
         plt.savefig(out)
 
     # =====================================================================
-    # difference between the memories plot for function of size todo 
+    # difference between the memories plot for function of size 
     configs = [{'mem': 'D1', 'clk': (240, 240)},
                {'mem': 'D2', 'clk': (240, 240)},
                {'mem': 'D3', 'clk': (240, 240)},]
@@ -131,8 +137,10 @@ def main():
             ax = plt.subplot(221 + i)
             if meas_type == 'latency':
                 plt.ylim(0, 60)
+                plt.xticks(np.arange(5)*64)
             else:
                 plt.ylim(0, 17)
+                plt.xticks(np.arange(9)*2048, rotation=12)
             visu.final_size_func_foreach(configs, meas_type, direction,
                                         size_lambda=size_lambda)
             i = i + 1
@@ -206,8 +214,10 @@ def main():
             ax = plt.subplot(221 + i)
             if meas_type == 'latency':
                 plt.ylim(0, 80)
+                plt.xticks(np.arange(9)*64)
             else:
                 plt.ylim(0, 27)
+                plt.xticks(np.arange(9)*2048, rotation=12)
             visu.final_size_func_foreach(configs, meas_type, direction,
                                         size_lambda=size_lambda)
             i = i + 1
