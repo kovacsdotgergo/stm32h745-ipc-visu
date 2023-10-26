@@ -16,8 +16,10 @@ def errorbars(configs, sizes, data, meas_type):
         m7, m4 = config['clk']
         means = data[i][0]
         errors = data[i][1:]
-        plt.errorbar(sizes, means, yerr=errors, fmt='o--', capsize=5, \
+        container = plt.errorbar(sizes, means, yerr=errors, fmt='o', capsize=5,\
                      label=f'{config["mem"]}, {m7}, {m4}')
+        line, _, _ = container.lines
+        plt.plot(sizes, means, alpha=0.5, color=line.get_color())
 
 def setup_errorbars(meas_type, direction):
     '''Annotate errorbar plot'''

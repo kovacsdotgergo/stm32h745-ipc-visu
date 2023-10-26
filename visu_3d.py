@@ -126,11 +126,11 @@ def main():
     #         (332, 166), (376, 96), (412, 206), (444, 111), (480, 60),
     #         (480, 120), (480, 240)] # each greater than 40
    
-    size = [256] # list for read_meas_from_files
-    mems = visu_common.get_mems('.', r'D3.*')
+    size = [16380] # list for read_meas_from_files
+    mems = visu_common.get_mems('.', r'D3(_idcache_mpu_ncacheable)?')
     meas_type = 'datarate'
     clock_lambda = lambda m7, m4: m4 >= 60
-    if_cut = False
+    if_cut = True
 
     cmap = mpl.colormaps['tab10'].colors
     wire_alpha = 0.6

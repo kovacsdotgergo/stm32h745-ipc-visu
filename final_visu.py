@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import measurement
+import linear_model
 import visu_common
 import histogram
 import visu_3d
@@ -18,6 +19,9 @@ def if_small_size(size):
 
 def main():
     '''Printing and writing out all final plots'''
+    json_path = 'models.json'
+    mem_regex = r'D[0-9](_idcache_mpu_ncacheable)?'
+    linear_model.print_table(json_path, mem_regex)    
     # =====================================================================
     # Histogram
     filename = 'histogram.pdf'
@@ -67,9 +71,10 @@ def main():
 
     # =====================================================================
     # size plot clock dependecy 
-    configs_all = [[{'mem': 'D3', 'clk': (480, 60)},
-                    {'mem': 'D3', 'clk': (240, 60)},
-                    {'mem': 'D3', 'clk': (120, 60)},],
+    configs_all = [[{'mem': 'D3', 'clk': (240, 60)},
+                    {'mem': 'D3', 'clk': (120, 60)},
+                    {'mem': 'D3', 'clk': (480, 60)},],
+                    # todo: {'mem': 'D3', 'clk': (60, 60)},],
                    [{'mem': 'D3', 'clk': (240, 240)},
                     {'mem': 'D3', 'clk': (240, 120)},
                     {'mem': 'D3', 'clk': (240, 60)},],]
@@ -199,12 +204,13 @@ def main():
 
     # =====================================================================
     # for each memory the difference between all the options todo (2d only)
-    configs = [{'mem': 'D1_idcache_mpu_ncacheable', 'clk': (480, 240)},
-               {'mem': 'D2_idcache_mpu_ncacheable', 'clk': (480, 240)},
-               {'mem': 'D3_idcache_mpu_ncacheable', 'clk': (480, 240)},
-               {'mem': 'D1', 'clk': (480, 240)},
-               {'mem': 'D2', 'clk': (480, 240)},
-               {'mem': 'D3', 'clk': (480, 240)},]
+    clks = (120, 120) # todo: (480, 240)
+    configs = [{'mem': 'D1_idcache_mpu_ncacheable', 'clk': clks},
+               {'mem': 'D2_idcache_mpu_ncacheable', 'clk': clks},
+               {'mem': 'D3_idcache_mpu_ncacheable', 'clk': clks},
+               {'mem': 'D1', 'clk': clks},
+               {'mem': 'D2', 'clk': clks},
+               {'mem': 'D3', 'clk': clks},]
     filename = 'all_mems_size.pdf'
     i = 0
     plt.figure(figsize=(10, 9.5), layout='tight')
