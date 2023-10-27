@@ -29,7 +29,15 @@ import regex
 # # plt.show()
 # # print('h')
 
-dicts = [{'mem': 'D2', 'clk': (120, 120)}, {'mem': 'D2', 'clk': (120, 120)}]
+import linear_model
 
-import visu_common
-visu_common.get_mems(os.curdir)
+# json_path = 'models.json'
+# mem_regex = r'D[0-9](_idcache_mpu_ncacheable)?'
+# linear_model.print_table(json_path, mem_regex)
+
+# json_path = 'models_long.json'
+# mem_regex = r'D[0-9](_idcache_mpu_ncacheable)?'
+# linear_model.print_table(json_path, mem_regex)   
+
+res = linear_model.get_mse(3*np.ones((8, 4)), np.ones((8, 4)), axis=1)
+print(res)
