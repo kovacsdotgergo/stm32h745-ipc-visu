@@ -4,7 +4,7 @@ import numpy as np
 
 class LinearModel():
     '''Linear model'''
-    def __init__(self, json_path, mem, direction):
+    def __init__(self, json_path, mem=None, direction=None):
         self.load_params(json_path)
         self.set_model(mem, direction)
 

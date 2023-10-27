@@ -31,6 +31,13 @@ import regex
 
 import linear_model
 
-json_path = 'models.json'
-mem_regex = r'D[0-9](_idcache_mpu_ncacheable)?'
-linear_model.print_table(json_path, mem_regex)
+# json_path = 'models.json'
+# mem_regex = r'D[0-9](_idcache_mpu_ncacheable)?'
+# linear_model.print_table(json_path, mem_regex)
+
+# json_path = 'models_long.json'
+# mem_regex = r'D[0-9](_idcache_mpu_ncacheable)?'
+# linear_model.print_table(json_path, mem_regex)   
+
+res = linear_model.get_mse(3*np.ones((8, 4)), np.ones((8, 4)), axis=1)
+print(res)

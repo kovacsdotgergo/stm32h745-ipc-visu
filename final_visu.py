@@ -63,7 +63,7 @@ def main():
             else:
                 plt.xticks(np.arange(5)*64)
             visu.final_size_func_foreach(configs, meas_type, direction,
-                                        size_lambda=size_lambda)
+                                        size_lambda=size_lambda, if_model=True)
             i = i + 1
     out = os.path.join('figures', filename)
     if not os.path.exists(out):
@@ -101,7 +101,7 @@ def main():
                         plt.ylim(0, 16)
                         plt.xticks(np.arange(9)*2048, rotation=12)
                 visu.final_size_func_foreach(configs, meas_type, direction,
-                                            size_lambda=size_lambda)
+                                            size_lambda=size_lambda, if_model=True)
                 i = i + 1
         out = os.path.join('figures', filename)
         if not os.path.exists(out):
@@ -147,7 +147,7 @@ def main():
                 plt.ylim(0, 17)
                 plt.xticks(np.arange(9)*2048, rotation=12)
             visu.final_size_func_foreach(configs, meas_type, direction,
-                                        size_lambda=size_lambda)
+                                        size_lambda=size_lambda, if_model=True)
             i = i + 1
     out = os.path.join('figures', filename)
     if not os.path.exists(out):
@@ -204,7 +204,7 @@ def main():
 
     # =====================================================================
     # for each memory the difference between all the options todo (2d only)
-    clks = (120, 120) # todo: (480, 240)
+    clks = (480, 240)
     configs = [{'mem': 'D1_idcache_mpu_ncacheable', 'clk': clks},
                {'mem': 'D2_idcache_mpu_ncacheable', 'clk': clks},
                {'mem': 'D3_idcache_mpu_ncacheable', 'clk': clks},
@@ -225,7 +225,7 @@ def main():
                 plt.ylim(0, 27)
                 plt.xticks(np.arange(9)*2048, rotation=12)
             visu.final_size_func_foreach(configs, meas_type, direction,
-                                        size_lambda=size_lambda)
+                                        size_lambda=size_lambda, if_model=True)
             i = i + 1
     out = os.path.join('figures', filename)
     if not os.path.exists(out):

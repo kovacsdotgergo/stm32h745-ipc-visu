@@ -114,7 +114,7 @@ def final3d_foreach(size, mems, direction, ax, meas_type='latency',
         errorbar_3d(clocks, data, ax, mem, cmap[color_idx])
         
             # Predictions by the model
-        model = linear_model.LinearModel('models.json', mem, direction)
+        model = linear_model.LinearModel('models_long.json', mem, direction)
         m7, m4, pred = model.get_grid_for_range(clocks, size, meas_type)
         model_grid(m7, m4, pred, ax, wire_cmap[color_idx], if_cut=if_cut, stride=stride)
     setup_ax(ax, direction, meas_type, size)
@@ -126,9 +126,9 @@ def main():
     #         (332, 166), (376, 96), (412, 206), (444, 111), (480, 60),
     #         (480, 120), (480, 240)] # each greater than 40
    
-    size = [16380] # list for read_meas_from_files
-    mems = visu_common.get_mems('.', r'D3(_idcache_mpu_ncacheable)?')
-    meas_type = 'datarate'
+    size = [64] # list for read_meas_from_files
+    mems = visu_common.get_mems('.', r'D3')
+    meas_type = 'latency'
     clock_lambda = lambda m7, m4: m4 >= 60
     if_cut = True
 
