@@ -72,6 +72,7 @@ def read_meas_from_files(sizes, dir_prefix,
             for line in file:
                 line = line.strip() # strip line ending
                 if line: # if not empty line
+                    line = line.split(sep=' ')[0]
                     cur_meas_values.append(int(line))
         if len(cur_meas_values) != meas_length: # read data and expected length
             print('Wrong file len')
@@ -155,17 +156,17 @@ def upper_lower_from_minmax(mean_min_max):
 def main():
     '''Measuring for several different sizes, saving the result to file'''
     serial_config = SerialConfig('COM5', 115200, 8, 'N', 1) 
-    num_meas = 65536
+    num_meas = 1024
 
     sizes_short = [1 if x==0 else 16*x for x in range(17)]
     sizes_long = [1 if x==0 else 1024*x for x in range(16)] + [512, 1536, 16380]
     sizes_max = [16380]
     #config begin
-    memory = os.path.join('pilot', 'D3')
+    memory = os.path.join('visualization', 'tmp_meas', 'D3')
     sizes = [1, 256, 4096, 16380]#sizes_long[1:] + sizes_short
     meas_directions = ['r', 's']
-    m7_clk = 480
-    m4_clk = 240
+    m7_clk = 120
+    m4_clk = 120
     #config end
     timer_clock = m4_clk
 

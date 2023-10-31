@@ -47,7 +47,7 @@ def final_size_func_foreach(configs, meas_type, direction, if_model=False,
     # sizes = [1 if x==0 else 16*x for x in range(17)] # [2048*x for x in range(17)]
     sizes = sorted(visu_common.get_sizes(size_dir, size_lambda=size_lambda))
     if if_model:
-        model = linear_model.LinearModel('models_long.json',
+        model = linear_model.LinearModel('models.json',
                                          configs[0]['mem'],
                                          direction)
 

@@ -19,7 +19,7 @@ def if_small_size(size):
 
 def main():
     '''Printing and writing out all final plots'''
-    json_path = 'models.json'
+    json_path = 'models_long.json'
     mem_regex = r'D[0-9](_idcache_mpu_ncacheable)?'
     linear_model.print_table(json_path, mem_regex)    
     # =====================================================================
@@ -71,13 +71,13 @@ def main():
 
     # =====================================================================
     # size plot clock dependecy 
-    configs_all = [[{'mem': 'D3', 'clk': (240, 60)},
-                    {'mem': 'D3', 'clk': (120, 60)},
-                    {'mem': 'D3', 'clk': (480, 60)},],
+    configs_all = [[{'mem': 'D1', 'clk': (240, 60)},
+                    {'mem': 'D1', 'clk': (120, 60)},
+                    {'mem': 'D1', 'clk': (480, 60)},],
                     # todo: {'mem': 'D3', 'clk': (60, 60)},],
-                   [{'mem': 'D3', 'clk': (240, 240)},
-                    {'mem': 'D3', 'clk': (240, 120)},
-                    {'mem': 'D3', 'clk': (240, 60)},],]
+                   [{'mem': 'D1', 'clk': (240, 240)},
+                    {'mem': 'D1', 'clk': (240, 120)},
+                    {'mem': 'D1', 'clk': (240, 60)},],]
     filename_all = ['clock_m7_size.pdf', 'clock_m4_size.pdf']
     for conf_idx, (configs, filename) in enumerate(zip(configs_all, filename_all)):
         i = 0
@@ -88,17 +88,17 @@ def main():
                 ax = plt.subplot(221 + i)
                 if conf_idx == 0: # effect of m7 figure
                     if meas_type == 'latency':
-                        plt.ylim(0, 150)
+                        plt.ylim(0, 180)
                         plt.xticks(np.arange(5)*64)
                     else:
-                        plt.ylim(0, 5)
+                        plt.ylim(0, 4)
                         plt.xticks(np.arange(9)*2048, rotation=12)
                 else:
                     if meas_type == 'latency':
-                        plt.ylim(0, 140)
+                        plt.ylim(0, 190)
                         plt.xticks(np.arange(5)*64)
                     else:
-                        plt.ylim(0, 16)
+                        plt.ylim(0, 14)
                         plt.xticks(np.arange(9)*2048, rotation=12)
                 visu.final_size_func_foreach(configs, meas_type, direction,
                                             size_lambda=size_lambda, if_model=True)
