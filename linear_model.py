@@ -55,8 +55,7 @@ class LinearModel():
         return m7, m4, self.get_output(m7, m4, size, meas_type)
 
 def print_table(json_path, mem_regex):
-    '''Print latex table from the json file, memories can be filtered with
-        mem_regex'''
+    '''Print latex table from the json file, memories can be filtered with mem_regex'''
     pattern = regex.compile(pattern=mem_regex)
     with open(json_path, 'r') as file:
         params = json.load(file)

@@ -127,10 +127,10 @@ def main():
     #         (480, 120), (480, 240)] # each greater than 40
    
     size = [64] # list for read_meas_from_files
-    mems = visu_common.get_mems('.', r'D3')
+    mems = visu_common.get_mems('.', r'D3_idcache_mpu_ncacheable(_release)?')
     meas_type = 'latency'
     clock_lambda = lambda m7, m4: m4 >= 60
-    if_cut = True
+    if_cut = False
 
     cmap = mpl.colormaps['tab10'].colors
     wire_alpha = 0.6
