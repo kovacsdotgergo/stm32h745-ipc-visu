@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
+from setup_paths import *
 import measurement
 import linear_model
 import visu_common
@@ -45,20 +46,19 @@ def final_size_func_foreach(configs, meas_type, direction, if_model=False,
                             size_lambda=lambda size: size < 260):
     '''Draws complete final plot for each config'''
     cmap = mpl.colormaps['tab10'].colors
-    model_path = os.path.join('models', 'models_long.json')
+    model_path = os.path.join(MODELS_PATH, 'models_long.json')
 
-    size_dir = f'{configs[0]["mem"]}/meas_r_{configs[0]["clk"][0]}_{configs[0]["clk"][1]}'
+    mem, (m7, m4) = configs[0]['mem'], configs[0]['clk']
+    size_dir = os.path.join(MEASUREMENTS_PATH, mem, f'meas_r_{m7}_{m4}')
     # sizes = [1 if x==0 else 16*x for x in range(17)] # [2048*x for x in range(17)]
     sizes = sorted(visu_common.get_sizes(size_dir, size_lambda=size_lambda))
     if if_model:
-        model = linear_model.LinearModel(model_path,
-                                         configs[0]['mem'],
-                                         direction)
+        model = linear_model.LinearModel(model_path, mem, direction)
 
     data = np.ndarray((len(configs), 3, len(sizes)))
     for i, config in enumerate(configs):
         mem, (m7, m4) = config['mem'], config['clk']
-        dir = f'{mem}/meas_{direction}_{m7}_{m4}'
+        dir = os.path.join(MEASUREMENTS_PATH, mem, f'meas_{direction}_{m7}_{m4}')
         data[i] = measurement.get_and_calc_meas(m4, dir, sizes, meas_type)
         if if_model:
             model.set_model(mem, direction)
@@ -71,31 +71,23 @@ def final_size_func_foreach(configs, meas_type, direction, if_model=False,
 def main():
     '''Reading in measurements, calculating mean, std then visualizing'''
     cmap = mpl.colormaps['tab10'].colors
-    configs = [{'mem': 'D2_idcache_mpu_ncacheable', 'clk': (480, 60)},\
-               {'mem': 'D2_idcache_mpu_ncacheable', 'clk': (240, 60)},
-               {'mem': 'D2_idcache_mpu_ncacheable', 'clk': (120, 60)},]
-    configs = [{'mem': 'D2', 'clk': (480, 240)},\
-               {'mem': 'D2_icache', 'clk': (480, 240)},\
-               {'mem': 'D2_idcache_mpu_ncacheable', 'clk': (480, 240)},\
-               {'mem': 'D1', 'clk': (480, 240)},
-               {'mem': 'D1_idcache_mpu_ncacheable', 'clk': (480, 240)},
-               {'mem': 'D3', 'clk': (480, 240)},
-               {'mem': 'D3_idcache_mpu_ncacheable_release', 'clk': (480, 240)},
-               {'mem': 'D3_idcache_mpu_ncacheable', 'clk': (480, 240)}]
     configs = [{'mem': 'D1_idcache_mpu_ncacheable', 'clk': (480, 60)},\
                {'mem': 'D2_idcache_mpu_ncacheable', 'clk': (480, 60)},
                {'mem': 'D3_idcache_mpu_ncacheable', 'clk': (480, 60)},]
     meas_type = 'latency'
     
-    dir = f'{configs[0]["mem"]}/meas_r_{configs[0]["clk"][0]}_{configs[0]["clk"][1]}'
+    mem, (m7, m4) = configs[0]["mem"], configs[0]["clk"]
+    dir = os.path.join(MEASUREMENTS_PATH, f'{mem}/meas_r_{m7}_{m4}')
     # sizes = [1 if x==0 else 16*x for x in range(17)] # [2048*x for x in range(17)]
     sizes = sorted(visu_common.get_sizes(dir, size_lambda=lambda size: size < 260))
 
     for direction in ['r', 's']:
         data = np.ndarray((len(configs), 3, len(sizes)))
         for i, config in enumerate(configs):
-            dir = f'{config["mem"]}/meas_{direction}_{config["clk"][0]}_{config["clk"][1]}'
-            data[i] = measurement.get_and_calc_meas(config['clk'][1], dir, sizes, meas_type)
+            mem, m7, m4 = config["mem"], config["clk"][0], config["clk"][1]
+            dir = os.path.join(MEASUREMENTS_PATH,
+                               f'{mem}/meas_{direction}_{m7}_{m4}')
+            data[i] = measurement.get_and_calc_meas(m4, dir, sizes, meas_type)
         data = measurement.upper_lower_from_minmax(data)
         plt.figure()
         errorbars(configs, sizes, data, cmap)

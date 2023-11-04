@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
 import os
+
+from setup_paths import *
 import measurement
 import visu_common
 import linear_model
@@ -95,7 +97,7 @@ def final3d_foreach(size, mems, direction, ax, meas_type='latency',
     cmap = mpl.colormaps['tab10'].colors
     wire_alpha = 0.6
     wire_cmap = mpl.colors.to_rgba_array(cmap, wire_alpha)
-    model_path = os.path.join('models', 'models_long.json')
+    model_path = os.path.join(MODELS_PATH, 'models_long.json')
 
     if meas_type == 'latency':
         ax.view_init(elev=30, azim=60)
@@ -104,12 +106,14 @@ def final3d_foreach(size, mems, direction, ax, meas_type='latency',
 
     for color_idx, mem in enumerate(mems):
         clocks = visu_common.get_clocks_in_folder(
-            mem, prefix=f'meas_{direction}_', clock_lambda=clock_lambda)
+            os.path.join(MEASUREMENTS_PATH, mem),
+            prefix=f'meas_{direction}_', clock_lambda=clock_lambda)
         
         # Measured data
         data = np.ndarray((len(clocks), 3, len(size)))
         for i, (m7, m4) in enumerate(clocks):
-            dir_prefix = os.path.join(mem, f'meas_{direction}_{m7}_{m4}')
+            dir_prefix = os.path.join(MEASUREMENTS_PATH,
+                                      mem, f'meas_{direction}_{m7}_{m4}')
             # timer clock is always the same as the m4 core's clock
             data[i] = measurement.get_and_calc_meas(m4, dir_prefix, size, meas_type)
         errorbar_3d(clocks, data, ax, mem, cmap[color_idx])
@@ -122,17 +126,12 @@ def final3d_foreach(size, mems, direction, ax, meas_type='latency',
 
 def main():
     '''Reading in measurements, calculating mean, std then visualizing'''
-    # clocks = [(72, 72), (120, 120), (196, 98), (200, 200), (240, 120),
-    #         (240, 240), (248, 62), (280, 140), (304, 152), (308, 77),
-    #         (332, 166), (376, 96), (412, 206), (444, 111), (480, 60),
-    #         (480, 120), (480, 240)] # each greater than 40
-   
-    size = [64] # list for read_meas_from_files
-    mems = visu_common.get_mems('.', r'D3_idcache_mpu_ncacheable(_release)?')
+    size = [64] # list needed for read_meas_from_files
+    mems = visu_common.get_mems(MEASUREMENTS_PATH, r'D3_idcache_mpu_ncacheable(_release)?')
     meas_type = 'latency'
     clock_lambda = lambda m7, m4: m4 >= 60
     if_cut = False
-    model_path = os.path.join('models', 'models.json')
+    model_path = os.path.join(MODELS_PATH, 'models.json')
 
     cmap = mpl.colormaps['tab10'].colors
     wire_alpha = 0.6
@@ -146,12 +145,14 @@ def main():
             ax.view_init(elev=30, azim=-135)
         for color_idx, mem in enumerate(mems):
             clocks = visu_common.get_clocks_in_folder(
-                mem, prefix=f'meas_{direction}_', clock_lambda=clock_lambda)
+                os.path.join(MEASUREMENTS_PATH, mem),
+                prefix=f'meas_{direction}_', clock_lambda=clock_lambda)
             
             # Measured data
             data = np.ndarray((len(clocks), 3, len(size)))
             for i, (m7, m4) in enumerate(clocks):
-                dir_prefix = os.path.join(mem, f'meas_{direction}_{m7}_{m4}')
+                dir_prefix = os.path.join(MEASUREMENTS_PATH, mem,
+                                          f'meas_{direction}_{m7}_{m4}')
                 # timer clock is always the same as the m4 core's clock
                 data[i] = measurement.get_and_calc_meas(m4, dir_prefix, size, meas_type)
             errorbar_3d(clocks, data, ax, mem, cmap[color_idx])
