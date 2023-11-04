@@ -19,9 +19,9 @@ def if_small_size(size):
 
 def main():
     '''Printing and writing out all final plots'''
-    json_path = 'models_long.json'
+    model_path = os.path.join('models', 'models_long.json')
     mem_regex = r'D[0-9](_idcache_mpu_ncacheable)?'
-    linear_model.print_table(json_path, mem_regex)    
+    linear_model.print_table(model_path, mem_regex)    
     # =====================================================================
     # Histogram
     filename = 'histogram.pdf'

@@ -95,6 +95,7 @@ def final3d_foreach(size, mems, direction, ax, meas_type='latency',
     cmap = mpl.colormaps['tab10'].colors
     wire_alpha = 0.6
     wire_cmap = mpl.colors.to_rgba_array(cmap, wire_alpha)
+    model_path = os.path.join('models', 'models_long.json')
 
     if meas_type == 'latency':
         ax.view_init(elev=30, azim=60)
@@ -114,7 +115,7 @@ def final3d_foreach(size, mems, direction, ax, meas_type='latency',
         errorbar_3d(clocks, data, ax, mem, cmap[color_idx])
         
             # Predictions by the model
-        model = linear_model.LinearModel('models_long.json', mem, direction)
+        model = linear_model.LinearModel(model_path, mem, direction)
         m7, m4, pred = model.get_grid_for_range(clocks, size, meas_type)
         model_grid(m7, m4, pred, ax, wire_cmap[color_idx], if_cut=if_cut, stride=stride)
     setup_ax(ax, direction, meas_type, size)
@@ -131,6 +132,7 @@ def main():
     meas_type = 'latency'
     clock_lambda = lambda m7, m4: m4 >= 60
     if_cut = False
+    model_path = os.path.join('models', 'models.json')
 
     cmap = mpl.colormaps['tab10'].colors
     wire_alpha = 0.6
@@ -155,7 +157,7 @@ def main():
             errorbar_3d(clocks, data, ax, mem, cmap[color_idx])
             
                 # Predictions by the model
-            model = linear_model.LinearModel('models.json', mem, direction)
+            model = linear_model.LinearModel(model_path, mem, direction)
             m7, m4, pred = model.get_grid_for_range(clocks, size, meas_type)
             model_grid(m7, m4, pred, ax, wire_cmap[color_idx], if_cut=if_cut)
         setup_ax(ax, direction, meas_type, size)

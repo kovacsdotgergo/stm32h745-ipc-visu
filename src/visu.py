@@ -1,6 +1,8 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+
 import measurement
 import linear_model
 import visu_common
@@ -43,11 +45,13 @@ def final_size_func_foreach(configs, meas_type, direction, if_model=False,
                             size_lambda=lambda size: size < 260):
     '''Draws complete final plot for each config'''
     cmap = mpl.colormaps['tab10'].colors
+    model_path = os.path.join('models', 'models_long.json')
+
     size_dir = f'{configs[0]["mem"]}/meas_r_{configs[0]["clk"][0]}_{configs[0]["clk"][1]}'
     # sizes = [1 if x==0 else 16*x for x in range(17)] # [2048*x for x in range(17)]
     sizes = sorted(visu_common.get_sizes(size_dir, size_lambda=size_lambda))
     if if_model:
-        model = linear_model.LinearModel('models.json',
+        model = linear_model.LinearModel(model_path,
                                          configs[0]['mem'],
                                          direction)
 
