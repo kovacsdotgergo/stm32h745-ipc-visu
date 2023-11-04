@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
+from setup_paths import *
 import measurement
 import visu_common
 
@@ -40,9 +41,9 @@ def histogram_intervals(raw_meas, title, std_center=False):
 
 def main():
     'Main functions, that draws the histogram of the pilot measurements'
-    mems = visu_common.get_mems('pilot')
+    mems = visu_common.get_mems(PILOT_PATH)
     for mem in mems:
-        dir_prefix = os.path.join('pilot', mem)
+        dir_prefix = os.path.join(PILOT_PATH, mem)
 
         directions = ['s', 'r']
         for direction in directions:
