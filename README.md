@@ -6,3 +6,5 @@ The Python scripts can be executed after installing the packages in `requirement
 * The results can be observed by configuring and running the `visu.py`, `histogram.py` and `visu3d.py` files.
 * Fitting of the linear model was performed using `model_regression.py`.
 * The final figures were rendered by running `final_visu.py`.
+
+The measurement files are available in a release.
