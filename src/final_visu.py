@@ -2,6 +2,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
+from setup_paths import *
 import measurement
 import linear_model
 import visu_common
@@ -19,14 +20,14 @@ def if_small_size(size):
 
 def main():
     '''Printing and writing out all final plots'''
-    json_path = 'models_long.json'
+    model_path = os.path.join(MODELS_PATH, 'models_long.json')
     mem_regex = r'D[0-9](_idcache_mpu_ncacheable)?'
-    linear_model.print_table(json_path, mem_regex)    
+    linear_model.print_table(model_path, mem_regex)    
     # =====================================================================
     # Histogram
     filename = 'histogram.pdf'
     mem = 'D3_idcache_mpu_ncacheable_release' #visu_common.get_mems('pilot', pattern=r'D3_.*')
-    dir_prefix = os.path.join('pilot', mem)
+    dir_prefix = os.path.join(PILOT_PATH, mem)
     m7, m4 = 480, 240
     plt.figure(figsize=(10, 9.5), layout='tight')
     i = 0
@@ -35,14 +36,14 @@ def main():
             measurement_folder = os.path.join(dir_prefix, f'meas_{direction}_{m7}_{m4}')
             #sizes = [16380] #visu_common.get_sizes(measurement_folder)
             raw = measurement.read_meas_from_files(sizes, measurement_folder)
-            # for raw_per_size, size in raw, sizes:
+
             plt.subplot(221 + i)
             dir_txt = 'M7 to M4' if direction=='s' else 'M4 to M7'
             title = f'Size:{sizes[0]} B, M7: {m7} MHz, M4: {m4} MHz, {dir_txt}'
             histogram.histogram_intervals(raw, title)
             plt.xticks(rotation=12)
             i = i + 1
-    out = os.path.join('figures', filename)
+    out = os.path.join(FIGURES_PATH, filename)
     if not os.path.exists(out):
         plt.savefig(out)
     
@@ -65,7 +66,7 @@ def main():
             visu.final_size_func_foreach(configs, meas_type, direction,
                                         size_lambda=size_lambda, if_model=True)
             i = i + 1
-    out = os.path.join('figures', filename)
+    out = os.path.join(FIGURES_PATH, filename)
     if not os.path.exists(out):
         plt.savefig(out)
 
@@ -74,7 +75,6 @@ def main():
     configs_all = [[{'mem': 'D1', 'clk': (240, 60)},
                     {'mem': 'D1', 'clk': (120, 60)},
                     {'mem': 'D1', 'clk': (480, 60)},],
-                    # todo: {'mem': 'D3', 'clk': (60, 60)},],
                    [{'mem': 'D1', 'clk': (240, 240)},
                     {'mem': 'D1', 'clk': (240, 120)},
                     {'mem': 'D1', 'clk': (240, 60)},],]
@@ -103,14 +103,14 @@ def main():
                 visu.final_size_func_foreach(configs, meas_type, direction,
                                             size_lambda=size_lambda, if_model=True)
                 i = i + 1
-        out = os.path.join('figures', filename)
+        out = os.path.join(FIGURES_PATH, filename)
         if not os.path.exists(out):
             plt.savefig(out)
 
     # =====================================================================
     # 3d clock dependency base
     size = 256
-    mems = visu_common.get_mems('.', r'D3')
+    mems = visu_common.get_mems(MEASUREMENTS_PATH, r'D3')
     filename = 'base_3d.pdf'
     i = 0
     fig = plt.figure(figsize=(10, 9.5), layout='tight')
@@ -124,7 +124,7 @@ def main():
                                     meas_type=meas_type, if_cut=True,
                                     stride=20)
             i = i + 1
-    out = os.path.join('figures', filename)
+    out = os.path.join(FIGURES_PATH, filename)
     if not os.path.exists(out):
         plt.savefig(out)
 
@@ -149,14 +149,14 @@ def main():
             visu.final_size_func_foreach(configs, meas_type, direction,
                                         size_lambda=size_lambda, if_model=True)
             i = i + 1
-    out = os.path.join('figures', filename)
+    out = os.path.join(FIGURES_PATH, filename)
     if not os.path.exists(out):
         plt.savefig(out)
 
     # =====================================================================
     # difference between the memories 3d
     size = 4096
-    mems = visu_common.get_mems('.', r'D[0-9]')
+    mems = visu_common.get_mems(MEASUREMENTS_PATH, r'D[0-9]')
     filename = 'memories_3d.pdf'
     i = 0
     fig = plt.figure(figsize=(10, 9.5), layout='tight')
@@ -172,17 +172,14 @@ def main():
                     clock_lambda=(lambda m7, m4: m7%120==0 and m4%60==0),
                     if_cut=False)
             i = i + 1
-    out = os.path.join('figures', filename)
+    out = os.path.join(FIGURES_PATH, filename)
     if not os.path.exists(out):
         plt.savefig(out)
 
     # =====================================================================
-    # difference between all cache options for one memory
-    # todo
-    # =====================================================================
     # difference between the memories with cache and mpu
     size = 16380
-    mems = visu_common.get_mems('.', r'D[0-9]_idcache_mpu_ncacheable')
+    mems = visu_common.get_mems(MEASUREMENTS_PATH, r'D[0-9]_idcache_mpu_ncacheable')
     filename = 'memories_cache_3d.pdf'
     i = 0
     fig = plt.figure(figsize=(10, 9.5), layout='tight')
@@ -198,12 +195,12 @@ def main():
                     clock_lambda=(lambda m7, m4: m7%120==0 and m4%60==0),
                     if_cut=False)
             i = i + 1
-    out = os.path.join('figures', filename)
+    out = os.path.join(FIGURES_PATH, filename)
     if not os.path.exists(out):
         plt.savefig(out)
 
     # =====================================================================
-    # for each memory the difference between all the options todo (2d only)
+    # for each memory the difference between all the options (2d only)
     clks = (480, 240)
     configs = [{'mem': 'D1_idcache_mpu_ncacheable', 'clk': clks},
                {'mem': 'D2_idcache_mpu_ncacheable', 'clk': clks},
@@ -227,7 +224,7 @@ def main():
             visu.final_size_func_foreach(configs, meas_type, direction,
                                         size_lambda=size_lambda, if_model=True)
             i = i + 1
-    out = os.path.join('figures', filename)
+    out = os.path.join(FIGURES_PATH, filename)
     if not os.path.exists(out):
         plt.savefig(out)
 
