@@ -2,6 +2,8 @@ import os
 import serial
 import numpy as np
 
+from setup_paths import *
+
 class SerialConfig:
     '''Class holding the data neccessary for the serial configuration'''
     def __init__(self, port, baud, bytesize, parity, stopbits) -> None:
@@ -157,9 +159,9 @@ def main():
 
     sizes_short = [1 if x==0 else 16*x for x in range(17)]
     sizes_long = [1 if x==0 else 1024*x for x in range(16)] + [512, 1536, 16380]
-    sizes_max = [16380]
+    sizes_max = [16380] # actual size is 16376
     #config begin
-    memory = os.path.join('visualization', 'tmp_meas', 'D3')
+    memory = 'D3_tmp'
     sizes = [1, 256, 4096, 16380]#sizes_long[1:] + sizes_short
     meas_directions = ['r', 's']
     m7_clk = 120
@@ -170,7 +172,7 @@ def main():
     for direction in meas_directions:
         for sent_data_size in sizes:
             dir_prefix = f'meas_{direction}_{m7_clk}_{m4_clk}' #'tmp_meas'
-            dir_prefix = os.path.join(memory, dir_prefix)
+            dir_prefix = os.path.join(MEASUREMENTS_PATH, memory, dir_prefix)
             if not os.path.exists(dir_prefix):
                 os.makedirs(dir_prefix)
             response = measure(num_meas, sent_data_size, serial_config, direction)
