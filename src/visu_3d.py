@@ -15,7 +15,6 @@ def errorbar_3dfull(clocks, data, size, meas_type, direction='s',
     @param[in]  datarates   list of datarate tuples (mean, min, max)
     @param[in]  size    measured message size
     '''
-    #todo: same problem with 1 size, needs more work
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     errorbar_3d(clocks, data, ax, '', color)

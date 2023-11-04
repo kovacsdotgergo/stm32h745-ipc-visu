@@ -75,7 +75,6 @@ def main():
     configs_all = [[{'mem': 'D1', 'clk': (240, 60)},
                     {'mem': 'D1', 'clk': (120, 60)},
                     {'mem': 'D1', 'clk': (480, 60)},],
-                    # todo: {'mem': 'D3', 'clk': (60, 60)},],
                    [{'mem': 'D1', 'clk': (240, 240)},
                     {'mem': 'D1', 'clk': (240, 120)},
                     {'mem': 'D1', 'clk': (240, 60)},],]
@@ -178,9 +177,6 @@ def main():
         plt.savefig(out)
 
     # =====================================================================
-    # difference between all cache options for one memory
-    # todo
-    # =====================================================================
     # difference between the memories with cache and mpu
     size = 16380
     mems = visu_common.get_mems(MEASUREMENTS_PATH, r'D[0-9]_idcache_mpu_ncacheable')
@@ -204,7 +200,7 @@ def main():
         plt.savefig(out)
 
     # =====================================================================
-    # for each memory the difference between all the options todo (2d only)
+    # for each memory the difference between all the options (2d only)
     clks = (480, 240)
     configs = [{'mem': 'D1_idcache_mpu_ncacheable', 'clk': clks},
                {'mem': 'D2_idcache_mpu_ncacheable', 'clk': clks},
